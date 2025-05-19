@@ -21,7 +21,7 @@ public interface TimelessAiService {
     
             {
               "amount": number,           // e.g., 19.00
-              "description": string,      // relevant, e.g., "gas"
+              "description": string,      // Relevant details about the expense, including what it was and where it happened, e.g., "gas at shopping mall station"
               "type": "IN" | "OUT",
               "error": boolean            // true if any required information is missing or unclear
             }
@@ -29,11 +29,11 @@ public interface TimelessAiService {
             Examples:
     
             Input:
-            "I paid 35 reais for gas."
+            "I paid 35 reais for gas at shopping mall station."
             Output:
             {
               "amount": 35.00,
-              "description": "gas",
+              "description": "gas at shopping mall station",
               "type": "OUT",
               "error": false
             }

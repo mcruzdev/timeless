@@ -2,9 +2,11 @@ require('dotenv').config()
 const { Client, LocalAuth } = require('whatsapp-web.js')
 const qrcode = require('qrcode-terminal')
 const crypto = require('crypto')
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const OpenAI = require("openai");
-
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
+const OpenAI = require("openai")
+const fs = require("fs")
+const { tmpdir } = require("os")
+const path = require('path')
 
 const timelessApiClient = require('./axios')
 
@@ -33,7 +35,7 @@ const client = new Client({
 
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true })
-});
+})
 
 client.on('ready', () => {
     console.log('client connected')
@@ -41,11 +43,10 @@ client.on('ready', () => {
 
 client.on('message', async (msg) => {
 
-    if (!msg.hasMedia) {
-        console.log('message rejected')
-    } else {
+    if (msg.hasMedia) {
         const media = await msg.downloadMedia()
-        if (media.mimetype.startsWith("audio/ogg;")) {
+        
+        if (media.mimetype.startsWith("audio")) {
             const buffer = Buffer.from(media.data, 'base64')
             const from = await msg.getContact()
             const audioName = generateAudioName(from.id.user)
@@ -53,36 +54,64 @@ client.on('message', async (msg) => {
                 Bucket: process.env.ASSETS_BUCKET,
                 Key: audioName,
                 Body: buffer,
-                ContentType: 'audio/mpeg'
+                ContentType: media.mimetype
             })
+
+            const p = path.join(tmpdir(), generateSimpleAudioName())
+
+            fs.writeFileSync(p, buffer)
 
             await s3Client.send(command)
 
-            const transcription = await openai.audio.transcriptions.create({
-                file: buffer,
-                model: "gpt-4o-transcribe",
-            });
+            let transcription
+            try {
+                transcription = await openai.audio.transcriptions.create({
+                    file: fs.createReadStream(p),
+                    model: "whisper-1",
+                    response_format: "verbose_json",
+                })
+            } catch (error) {
+                console.error('error while getting transcription from OpenAI', error)
+            } finally {
+                fs.rmSync(p, {
+                    force: true,
+                    maxRetries: 3
+                })
+            }
 
-            timelessApiClient.post('/api/messages', {
-                location: audioName,
-                from: from.id.user.toString(),
-                message: transcription,
-            }).then(response => {
-                console.log('sent to timeless-api, status code is ', response.status)
-                if (allowUsers.includes(from.id.user)) {
-                    msg.reply('Sua movimentação foi cadastrada no sistema 😀')
-                    console.log(JSON.stringify(response.data))
-                }
-            }).catch(err => {
-                console.error('error while sending message to timeless-api', err)
-                if (allowUsers.includes(from.id.user)) {
-                    msg.reply('Desculpe-me! Não foi possível cadastrar a sua movimentação 😔😔😔')
-                }
-            })
+            if (!transcription) {
+                sendMessageIf(allowUsers.includes(from.id.user), () => {
+                    msg.reply('Desculpe-me! Não foi possível cadastrar a sua movimentação 😔')
+                })
+            } else {
+                timelessApiClient.post('/api/messages', {
+                    location: audioName,
+                    from: from.id.user.toString(),
+                    message: transcription.text
+                }).then(response => {
+                    console.log('sent to timeless-api, status code is ', response.status)
+                    sendMessageIf(allowUsers.includes(from.id.user), () => {
+                        msg.reply('Sua movimentação foi cadastrada no sistema 😀')
+                    })
+                }).catch(err => {
+                    console.error('error while sending message to timeless-api', err.status)
+                    sendMessageIf(allowUsers.includes(from.id.user), () => {
+                        msg.reply('Desculpe-me! Não foi possível cadastrar a sua movimentação 😔')
+                    })
+                })
+            }
         }
     }
 })
 
 const generateAudioName = (userId) => `audios/${userId}/${crypto.randomUUID().toLocaleLowerCase()}.mp3`
 
-client.initialize();
+const generateSimpleAudioName = () => `${crypto.randomUUID().toLocaleLowerCase()}.mp3`
+
+const sendMessageIf = (condition, runnable) => {
+    if (condition) {
+        runnable()
+    }
+}
+
+client.initialize()
