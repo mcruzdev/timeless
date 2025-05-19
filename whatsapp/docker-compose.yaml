@@ -1,14 +1,14 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
+    redis:
+        image: redis:7.2
+        container_name: redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        restart: unless-stopped
 
 volumes:
-  redis_data:
+    redis_data:

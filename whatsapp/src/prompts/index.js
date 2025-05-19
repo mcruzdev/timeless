@@ -29,7 +29,7 @@ Output:
   "amount": 35.00,
   "description": "gas at shopping mall station",
   "type": "OUT",
-  "error": false
+  "error": false  
 }
 
 Base64 Input (decoded message: "I received 500 from a freelance job."):
@@ -51,8 +51,8 @@ Output:
   "type": "OUT",
   "error": true
 }
-`;
+`
 
 module.exports = {
-    processImagePrompt
+    processImagePrompt,
 }

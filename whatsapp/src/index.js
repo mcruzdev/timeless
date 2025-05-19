@@ -1,66 +1,65 @@
-require('dotenv').config()
-const { Client, LocalAuth } = require('whatsapp-web.js')
-const qrcode = require('qrcode-terminal')
-const crypto = require('crypto')
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
+require("dotenv").config()
+const { Client, LocalAuth } = require("whatsapp-web.js")
+const qrcode = require("qrcode-terminal")
+const crypto = require("crypto")
 const OpenAI = require("openai")
 const fs = require("fs")
 const { tmpdir } = require("os")
-const { createClient } = require("redis");
-const path = require('path')
-const WAWebJS = require('whatsapp-web.js')
+const { createClient } = require("redis")
+const path = require("path")
 
-const allowedMedias = ['image/jpeg', 'audio/ogg; codecs=opus']
-const usersKey = 'timeless-api:users'
+const allowedMedias = ["image/jpeg", "audio/ogg; codecs=opus"]
+const usersKey = "timeless-api:users"
 
 let redis
 createClient({
-    url: 'redis://localhost:6379'
-}).connect().then(r => {
-    redis = r
-    redis.set(usersKey, JSON.stringify(process.env.ALLOW_USERS.split(',').filter(u => u.length > 0))).then(r => {
-        console.log(usersKey, 'was set successfully')
-    })
+    url: "redis://localhost:6379",
 })
+    .connect()
+    .then((r) => {
+        redis = r
+        redis
+            .set(
+                usersKey,
+                JSON.stringify(
+                    process.env.ALLOW_USERS.split(",").filter(
+                        (u) => u.length > 0
+                    )
+                )
+            )
+            .then(() => {
+                console.log(usersKey, "was set successfully")
+            })
+    })
 
-const { processImagePrompt } = require('./prompts')
+const { processImagePrompt } = require("./prompts")
 
 // timeless-api
-const timelessApiClient = require('./axios')
+const timelessApiClient = require("./axios")
 
 // OpenAI
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-})
-
-// AWS S3
-const s3Client = new S3Client({
-    region: 'sa-east-1',
-    credentials: {
-        accessKeyId: process.env.ACCESS_KEY,
-        secretAccessKey: process.env.SECRET_KEY
-    }
+    apiKey: process.env.OPENAI_API_KEY,
 })
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: 'wwebjs-auth'
+        dataPath: "wwebjs-auth",
     }),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    }
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
 })
 
-client.on('qr', (qr) => {
+client.on("qr", (qr) => {
     qrcode.generate(qr, { small: true })
 })
 
-client.on('ready', () => {
-    console.log('client connected')
+client.on("ready", () => {
+    console.log("client connected")
 })
 
-client.on('message', async (message) => {
-
+client.on("message", async (message) => {
     // there is no need to handle status message
     if (message.isStatus) {
         return
@@ -77,7 +76,7 @@ client.on('message', async (message) => {
     if (message.hasMedia) {
         const media = await message.downloadMedia()
         if (!allowedMedias.includes(media.mimetype)) {
-            console.log('mimetype rejected: ', media.mimetype)
+            console.log("mimetype rejected: ", media.mimetype)
             return
         }
         await handleMediaMessage(message, media)
@@ -86,11 +85,10 @@ client.on('message', async (message) => {
     }
 })
 
-
 /**
- * 
- * @param {WAWebJS.Message} message 
- * @param {WAWebJS.MessageMedia} media 
+ *
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
  */
 const handleImageMessage = async (message, media) => {
     const contact = await message.getContact()
@@ -101,7 +99,8 @@ const handleImageMessage = async (message, media) => {
                 role: "user",
                 content: [
                     {
-                        type: "input_text", text: processImagePrompt
+                        type: "input_text",
+                        text: processImagePrompt,
                     },
                     {
                         type: "input_image",
@@ -115,25 +114,25 @@ const handleImageMessage = async (message, media) => {
     const data = JSON.parse(response.output_text)
 
     if (data.error) {
-        message.reply('Hmmmm... Não foi possível processar sua imagem')
+        message.reply("Hmmmm... Não foi possível processar sua imagem")
         return
     }
 
-    await timelessApiClient.post('/api/records', {
+    await timelessApiClient.post("/api/records", {
         from: contact.id.user,
         recordType: data.type,
         amount: data.amount,
-        description: data.description
+        description: data.description,
     })
 }
 
 /**
- * 
- * @param {WAWebJS.Message} message 
- * @param {WAWebJS.MessageMedia} media 
+ *
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
  */
 const handleAudioMessage = async (message, media) => {
-    const buffer = Buffer.from(media.data, 'base64')
+    const buffer = Buffer.from(media.data, "base64")
     const contact = await message.getContact()
     const p = path.join(tmpdir(), generateSimpleAudioName())
     fs.writeFileSync(p, buffer)
@@ -145,62 +144,56 @@ const handleAudioMessage = async (message, media) => {
             response_format: "verbose_json",
         })
     } catch (error) {
-        console.error('error while getting transcription from OpenAI', error)
+        console.error("error while getting transcription from OpenAI", error)
     } finally {
         fs.rmSync(p, {
             force: true,
-            maxRetries: 3
+            maxRetries: 3,
         })
     }
 
     if (!transcription) {
-        message.reply('Hmmmm... Não foi possível transcrever o seu áudio')
+        message.reply("Hmmmm... Não foi possível transcrever o seu áudio")
     } else {
-        timelessApiClient.post('/api/messages', {
-            from: contact.id.user,
-            message: transcription.text
-        }).then(_ => {
-            return message.react('✅')
-        })
-        .catch(err => {
-            console.error(err)
-            return message.react('❌')
-        })
+        timelessApiClient
+            .post("/api/messages", {
+                from: contact.id.user,
+                message: transcription.text,
+            })
+            .then(() => {
+                return message.react("✅")
+            })
+            .catch((err) => {
+                console.error(err)
+                return message.react("❌")
+            })
     }
 }
 
 /**
- * 
- * @param {WAWebJS.Message} message 
+ *
+ * @param {WAWebJS.Message} message
  */
 const handleTextMessage = (message) => {
     console.log(message.body)
 }
 
 /**
- * 
- * @param {WAWebJS.Message} message 
- * @param {WAWebJS.MessageMedia} media 
+ *
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
  */
 const handleMediaMessage = async (message, media) => {
-    if (media.mimetype === 'audio/ogg; codecs=opus') {
+    if (media.mimetype === "audio/ogg; codecs=opus") {
         await handleAudioMessage(message, media)
     }
 
-    if (media.mimetype === 'image/jpeg') {
+    if (media.mimetype === "image/jpeg") {
         await handleImageMessage(message, media)
     }
-
 }
 
-const generateAudioName = (userId) => `audios/${userId}/${crypto.randomUUID().toLocaleLowerCase()}.mp3`
-
-const generateSimpleAudioName = () => `${crypto.randomUUID().toLocaleLowerCase()}.mp3`
-
-const sendMessageIf = (condition, runnable) => {
-    if (condition) {
-        runnable()
-    }
-}
+const generateSimpleAudioName = () =>
+    `${crypto.randomUUID().toLocaleLowerCase()}.mp3`
 
 client.initialize()
