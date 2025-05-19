@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -25,6 +26,7 @@ public class Record {
     private RecordType recordType;
     @Enumerated(EnumType.STRING)
     private OutcomeType outcomeType;
+    private Instant createdAt;
 
     protected Record() {
     }
@@ -35,6 +37,7 @@ public class Record {
         this.description = description;
         this.recordType = recordType;
         this.outcomeType = outcomeType;
+        this.createdAt = Instant.now();
     }
 
     public static Record createIncome(String userId, BigDecimal amount, String description) {
@@ -72,5 +75,9 @@ public class Record {
 
     public OutcomeType getOutcomeType() {
         return outcomeType;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 }

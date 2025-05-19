@@ -7,6 +7,9 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RolesAllowed({"USER"})
@@ -14,6 +17,8 @@ import java.util.List;
 public class RecordResource {
 
     RecordRepository recordRepository;
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
 
     public RecordResource(
             RecordRepository recordRepository
@@ -23,8 +28,16 @@ public class RecordResource {
 
     @GET
     public Response getRecords() {
-        List<Record> output = recordRepository.findAll().list();
+        List<RecordItem> output = recordRepository.findAll()
+                .list()
+                .stream().map(record -> {
+                    String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate().format(formatter);
+                    return new RecordItem(record.getId(), record.getAmount(), record.getDescription(), record.getRecordType().name(), format);
+                }).toList();
         return Response.ok(output).build();
+    }
+
+    public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {
     }
 
 }

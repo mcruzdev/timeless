@@ -1,5 +1,4 @@
-<p-toolbar [style]="{ 'border': 'none', 'border-radius': 0, 'padding': '1rem 1rem 1rem 1.5rem' }"
-           xmlns:div="http://www.w3.org/1999/html">
+<p-toolbar [style]="{ 'border': 'none', 'border-radius': 0, 'padding': '1rem 1rem 1rem 1.5rem' }">
   <ng-template #start>
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-thin cursor-pointer" [routerLink]="['/home']">🕰</h1>
@@ -41,9 +40,9 @@
         <td class="text-sm">{{ record.description }}</td>
         <td class="text-sm">
           <p-tag rounded="true" value="{{ record.tag }}" [icon]="record.icon"
-                 [severity]="record.type == 'IN' ? 'success' : 'danger'"></p-tag>
+                 [severity]="record.recordType == 'IN' ? 'success' : 'danger'"></p-tag>
         </td>
-        <td class="text-sm">{{ record.when }}</td>
+        <td class="text-sm">{{ record.createdAt }}</td>
       </tr>
     </ng-template>
   </p-table>
