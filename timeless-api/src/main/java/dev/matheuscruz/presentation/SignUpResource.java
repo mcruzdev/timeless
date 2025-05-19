@@ -1,5 +1,13 @@
 package dev.matheuscruz.presentation;
 
+import java.net.URI;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import dev.matheuscruz.infra.security.AESAdapter;
@@ -14,23 +22,13 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.net.URI;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
 @Path("/api/sign-up")
 public class SignUpResource {
 
     AESAdapter aesAdapter;
     UserRepository userRepository;
 
-    public SignUpResource(
-            UserRepository userRepository,
-            AESAdapter aesAdapter
-    ) {
+    public SignUpResource(UserRepository userRepository, AESAdapter aesAdapter) {
         this.userRepository = userRepository;
         this.aesAdapter = aesAdapter;
     }
@@ -53,21 +51,13 @@ public class SignUpResource {
             String phoneNumber = this.aesAdapter.encrypt(req.phoneNumber());
             String name = this.aesAdapter.encrypt(req.name());
             return User.create(email, password, name, phoneNumber);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException |
-                 InvalidKeyException e) {
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException
+                | InvalidKeyException e) {
             throw new InternalServerErrorException(e);
         }
     }
 
-    public record SignUpRequest(
-            @Email
-            String email,
-            @NotBlank
-            @Size(min = 8)
-            String password,
-            @NotBlank
-            String phoneNumber,
-            @NotBlank
-            String name) {
+    public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8) String password,
+            @NotBlank String phoneNumber, @NotBlank String name) {
     }
 }

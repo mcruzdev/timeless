@@ -177,6 +177,40 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <version>1.12.0</version>
+                <configuration>
+                  <groups>java.,javax.,org.,com.</groups>
+                  <staticGroups>java,*</staticGroups>
+                  <removeUnused>true</removeUnused>
+                  <excludes>
+                    <exclude>**/thrift/*.java</exclude>
+                  </excludes>
+                </configuration>
+                <executions>
+                  <execution>
+                    <id>sort-imports</id>
+                    <goals>
+                      <goal>sort</goal><!-- runs at process-sources phase by default -->
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
+              <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>2.26.0</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>format</goal>
+                      <goal>validate</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
         </plugins>
     </build>
 

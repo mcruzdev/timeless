@@ -1,5 +1,9 @@
 package dev.matheuscruz.domain;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -7,10 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "records")
@@ -31,7 +31,8 @@ public class Record {
     protected Record() {
     }
 
-    private Record(String userId, BigDecimal amount, String description, RecordType recordType, OutcomeType outcomeType) {
+    private Record(String userId, BigDecimal amount, String description, RecordType recordType,
+            OutcomeType outcomeType) {
         this.userId = userId;
         this.amount = amount;
         this.description = description;
@@ -45,11 +46,8 @@ public class Record {
     }
 
     public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type) {
-        return new Record(
-                Objects.requireNonNull(userId),
-                Objects.requireNonNull(amount),
-                Objects.requireNonNull(description),
-                Objects.requireNonNull(RecordType.OUT),
+        return new Record(Objects.requireNonNull(userId), Objects.requireNonNull(amount),
+                Objects.requireNonNull(description), Objects.requireNonNull(RecordType.OUT),
                 Objects.requireNonNullElse(type, OutcomeType.GENERAL));
     }
 

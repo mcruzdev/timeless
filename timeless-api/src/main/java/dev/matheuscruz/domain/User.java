@@ -1,9 +1,12 @@
 package dev.matheuscruz.domain;
 
-import jakarta.persistence.*;
-
 import java.util.Objects;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -19,12 +22,8 @@ public class User {
     private String phoneNumber;
 
     public static User create(String email, String password, String name, String phoneNumber) {
-        return new User(
-                Objects.requireNonNull(email),
-                Objects.requireNonNull(password),
-                Objects.requireNonNull(name),
-                Objects.requireNonNull(phoneNumber)
-        );
+        return new User(Objects.requireNonNull(email), Objects.requireNonNull(password), Objects.requireNonNull(name),
+                Objects.requireNonNull(phoneNumber));
     }
 
     protected User() {

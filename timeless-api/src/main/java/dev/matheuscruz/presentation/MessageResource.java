@@ -1,7 +1,12 @@
 package dev.matheuscruz.presentation;
 
+import java.math.BigDecimal;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordType;
@@ -22,10 +27,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import java.math.BigDecimal;
-
 
 @Path("/api/messages")
 public class MessageResource {
@@ -37,12 +38,8 @@ public class MessageResource {
     ObjectMapper mapper;
     String assetsBucket;
 
-    public MessageResource(
-            TimelessAiService aiService,
-            RecordRepository recordRepository,
-            AESAdapter aesAdapter,
-            ObjectMapper mapper,
-            @ConfigProperty(name = "assets.bucket") String assetsBucket,
+    public MessageResource(TimelessAiService aiService, RecordRepository recordRepository, AESAdapter aesAdapter,
+            ObjectMapper mapper, @ConfigProperty(name = "assets.bucket") String assetsBucket,
             UserRepository userRepository) {
         this.aiService = aiService;
         this.recordRepository = recordRepository;
@@ -59,8 +56,7 @@ public class MessageResource {
 
         String phoneNumber = this.aesAdapter.tryEncrypt(req.from());
         User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
-                .firstResultOptional()
-                .orElseThrow(NotFoundException::new);
+                .firstResultOptional().orElseThrow(NotFoundException::new);
 
         String json = aiService.identifyTransaction(req.message());
 
@@ -84,29 +80,15 @@ public class MessageResource {
 
     private Record generateProperRecord(AiResponse aiResponse, User user) {
         if (aiResponse.type().equals(RecordType.OUT)) {
-            return Record.createOutcome(
-                    user.getId(),
-                    aiResponse.amount(),
-                    aiResponse.description(),
-                    OutcomeType.NONE
-            );
+            return Record.createOutcome(user.getId(), aiResponse.amount(), aiResponse.description(), OutcomeType.NONE);
         } else {
-            return Record.createIncome(
-                    user.getId(),
-                    aiResponse.amount(),
-                    aiResponse.description()
-            );
+            return Record.createIncome(user.getId(), aiResponse.amount(), aiResponse.description());
         }
     }
 
     public record AiResponse(BigDecimal amount, String description, Boolean error, RecordType type) {
     }
 
-    public record MessageRequest(
-            @NotBlank
-            String from,
-            @NotBlank
-            @Size(min = 10)
-            String message) {
+    public record MessageRequest(@NotBlank String from, @NotBlank @Size(min = 10) String message) {
     }
 }

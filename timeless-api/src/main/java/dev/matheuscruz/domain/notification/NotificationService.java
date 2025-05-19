@@ -1,11 +1,11 @@
 package dev.matheuscruz.domain.notification;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import dev.langchain4j.agent.tool.Tool;
-import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class NotificationService {
@@ -13,7 +13,8 @@ public class NotificationService {
     Mailer mailer;
     Boolean enabled;
 
-    public NotificationService(Mailer mailer, @ConfigProperty(name = "timeless.email.enabled", defaultValue = "false") Boolean enabled) {
+    public NotificationService(Mailer mailer,
+            @ConfigProperty(name = "timeless.email.enabled", defaultValue = "false") Boolean enabled) {
         this.mailer = mailer;
         this.enabled = enabled;
     }

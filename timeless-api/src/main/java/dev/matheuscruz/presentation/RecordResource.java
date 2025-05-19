@@ -1,5 +1,11 @@
 package dev.matheuscruz.presentation;
 
+import java.math.BigDecimal;
+import java.net.URI;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordType;
@@ -19,12 +25,6 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
-import java.math.BigDecimal;
-import java.net.URI;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
 @Path("/api/records")
 public class RecordResource {
 
@@ -33,11 +33,7 @@ public class RecordResource {
     AESAdapter aesAdapter;
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public RecordResource(
-            RecordRepository recordRepository,
-            UserRepository userRepository,
-            AESAdapter aesAdapter
-    ) {
+    public RecordResource(RecordRepository recordRepository, UserRepository userRepository, AESAdapter aesAdapter) {
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
         this.aesAdapter = aesAdapter;
@@ -48,8 +44,7 @@ public class RecordResource {
 
         String phoneNumber = this.aesAdapter.tryEncrypt(req.from());
         User user = this.userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
-                .firstResultOptional()
-                .orElseThrow(ForbiddenException::new);
+                .firstResultOptional().orElseThrow(ForbiddenException::new);
 
         QuarkusTransaction.begin();
         Record record;
@@ -67,27 +62,20 @@ public class RecordResource {
 
     @GET
     public Response getRecords() {
-        List<RecordItem> output = recordRepository.findAll()
-                .list()
-                .stream().map(record -> {
-                    String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate().format(formatter);
-                    return new RecordItem(record.getId(), record.getAmount(), record.getDescription(), record.getRecordType().name(), format);
-                }).toList();
+        List<RecordItem> output = recordRepository.findAll().list().stream().map(record -> {
+            String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
+                    .format(formatter);
+            return new RecordItem(record.getId(), record.getAmount(), record.getDescription(),
+                    record.getRecordType().name(), format);
+        }).toList();
         return Response.ok(output).build();
     }
 
     public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {
     }
 
-    public record CreateRecordRequest(
-            @PositiveOrZero
-            BigDecimal amount,
-            @NotBlank
-            String description,
-            @NotNull
-            RecordType recordType,
-            @NotBlank
-            String from) {
+    public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
+            @NotNull RecordType recordType, @NotBlank String from) {
     }
 
 }
