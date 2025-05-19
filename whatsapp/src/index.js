@@ -66,7 +66,7 @@ client.on('message', async (msg) => {
             timelessApiClient.post('/api/messages', {
                 location: audioName,
                 from: from.id.user.toString(),
-                transcription,
+                message: transcription,
             }).then(response => {
                 console.log('sent to timeless-api, status code is ', response.status)
                 if (allowUsers.includes(from.id.user)) {
