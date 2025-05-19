@@ -1,0 +1,9 @@
+<div class="h-screen flex flex-col shadow justify-center items-center m-2 gap-2">
+
+  <h1 class="text-xl font-thin">Welcome to <span class="font-bold">Timeless</span> 🕰</h1>
+  <input class="w-200" type="text" pSize="small" pInputText [(ngModel)]="email" placeholder="email@email.com"
+         autocomplete="false"/>
+  <input class="w-200" type="password" pSize="small" pInputText [(ngModel)]="password" placeholder="••••••"
+         autocomplete="false"/>
+  <p-button label="Submit" severity="contrast" size="small" (onClick)="onSubmit()"></p-button>
+</div>
