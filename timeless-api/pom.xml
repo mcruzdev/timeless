@@ -16,6 +16,9 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
         <quarkus-amazon-services.version>3.3.1</quarkus-amazon-services.version>
+        <quarkus-quinoa.version>2.5.4</quarkus-quinoa.version>
+        <jbcrypt.version>0.4</jbcrypt.version>
+        <quarkus-langchain4j-openai.version>1.0.0.CR1</quarkus-langchain4j-openai.version>
     </properties>
 
     <dependencyManagement>
@@ -61,7 +64,7 @@
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
             <artifactId>quarkus-quinoa</artifactId>
-            <version>2.5.4</version>
+            <version>${quarkus-quinoa.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -76,7 +79,7 @@
         <dependency>
             <groupId>io.quarkiverse.langchain4j</groupId>
             <artifactId>quarkus-langchain4j-openai</artifactId>
-            <version>1.0.0.CR1</version>
+            <version>${quarkus-langchain4j-openai.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.amazonservices</groupId>
@@ -105,7 +108,7 @@
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>0.4</version>
+            <version>${jbcrypt.version}</version>
         </dependency>
     </dependencies>
 
