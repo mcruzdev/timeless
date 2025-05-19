@@ -1,6 +1,7 @@
 package dev.matheuscruz.infra.security;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.InternalServerErrorException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.crypto.BadPaddingException;
@@ -36,5 +37,15 @@ public class AESAdapter {
         byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         return new String(original);
     }
+
+    public String tryEncrypt(String input) {
+        try {
+            return this.encrypt(input);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+
 }
 

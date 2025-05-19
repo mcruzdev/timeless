@@ -12,12 +12,10 @@ import dev.matheuscruz.infra.persistence.UserRepository;
 import dev.matheuscruz.infra.security.AESAdapter;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -26,14 +24,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.math.BigDecimal;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
-@RolesAllowed({"USER", "SYSTEM"})
+
 @Path("/api/messages")
 public class MessageResource {
 
@@ -64,7 +57,7 @@ public class MessageResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response message(@Valid MessageRequest req) {
 
-        String phoneNumber = tryGeneratePhoneNumber(req);
+        String phoneNumber = this.aesAdapter.tryEncrypt(req.from());
         User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
                 .firstResultOptional()
                 .orElseThrow(NotFoundException::new);
@@ -89,15 +82,6 @@ public class MessageResource {
         }
     }
 
-    private String tryGeneratePhoneNumber(MessageRequest req){
-        try {
-            return aesAdapter.encrypt(req.from());
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException |
-                 InvalidKeyException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
     private Record generateProperRecord(AiResponse aiResponse, User user) {
         if (aiResponse.type().equals(RecordType.OUT)) {
             return Record.createOutcome(
@@ -119,8 +103,6 @@ public class MessageResource {
     }
 
     public record MessageRequest(
-            @NotBlank
-            String location,
             @NotBlank
             String from,
             @NotBlank
