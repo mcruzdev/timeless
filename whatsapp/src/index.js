@@ -43,6 +43,7 @@ const openai = new OpenAI({
 })
 
 const client = new Client({
+    clientId: "me",
     authStrategy: new LocalAuth({
         dataPath: "wwebjs-auth",
     }),
@@ -175,7 +176,18 @@ const handleAudioMessage = async (message, media) => {
  * @param {WAWebJS.Message} message
  */
 const handleTextMessage = (message) => {
-    console.log(message.body)
+    timelessApiClient
+        .post("/api/messages", {
+            from: contact.id.user,
+            message,
+        })
+        .then(() => {
+            return message.react("✅")
+        })
+        .catch((err) => {
+            console.error(err)
+            return message.react("❌")
+        })
 }
 
 /**

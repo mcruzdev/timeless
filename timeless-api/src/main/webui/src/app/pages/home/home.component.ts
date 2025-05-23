@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {ToolbarModule} from 'primeng/toolbar';
 import {CardModule} from 'primeng/card';
 import {ButtonModule} from 'primeng/button';
@@ -6,38 +6,47 @@ import {AvatarModule} from 'primeng/avatar';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {RecordResponseItem, TimelessApiService} from '../../timeless-api.service';
+import {Router, RouterModule} from '@angular/router';
+import {TimelessApiService} from '../../timeless-api.service';
+import {timelessLocalStorageKey} from '../../constants';
+import {Menubar} from 'primeng/menubar';
+import {MenuItem, PrimeIcons} from 'primeng/api';
+import {IconField} from 'primeng/iconfield';
+import {Message} from 'primeng/message';
 
 @Component({
   selector: 'app-home',
-  imports: [ToolbarModule, CardModule, ButtonModule, AvatarModule, TableModule, TagModule, CommonModule, RouterModule],
+  imports: [ToolbarModule, CardModule, ButtonModule, AvatarModule, TableModule, TagModule, CommonModule, RouterModule, Menubar, IconField, Message],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
 
-  records: RecordResponseItem[] = []
-  balance = 0
-  eyes = true
+  userInitials = ''
+  hasPhoneNumber = signal(true)
 
-  constructor(private readonly timelessApiService: TimelessApiService) {
+  items: MenuItem[] = [
+    {
+      id: 'transactions',
+      label: 'Gastos',
+      styleClass: 'text-sm',
+      icon: PrimeIcons.DOLLAR,
+      routerLink: '/home'
+    }
+  ]
 
-    this.timelessApiService.getRecords().subscribe(body => {
-      if (body.length) {
-        this.records = body.map(item => ({
-          ...item,
-          tag: item.recordType === 'OUT' ? 'Saída' : 'Entrada',
-          icon: item.recordType === 'OUT' ? 'pi pi-arrow-circle-up' : 'pi pi-arrow-circle-down'
-        }))
-        this.balance = this.records.map(item => {
-          return item.recordType === 'OUT' ? item.amount * -1 : item.amount
-        }).reduce((prev, curr) => prev + curr)
-      }
-    })
-  }
+  constructor(private readonly router: Router, private readonly timelessApiService: TimelessApiService) {
+    const data = localStorage.getItem(timelessLocalStorageKey);
+    if (data == null) {
+      this.router.navigate([''])
+      return
+    }
+    const info = JSON.parse(data)
+    this.userInitials = info.name.at(0).toUpperCase()
 
-  changeEyes() {
-    this.eyes = !this.eyes
+    this.timelessApiService.userInfo()
+      .subscribe((response: any) => {
+        this.hasPhoneNumber.set(response.hasPhoneNumber)
+      })
   }
 }

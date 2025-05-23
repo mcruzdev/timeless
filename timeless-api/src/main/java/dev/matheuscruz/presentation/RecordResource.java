@@ -12,7 +12,6 @@ import dev.matheuscruz.domain.RecordType;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
-import dev.matheuscruz.infra.security.AESAdapter;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
@@ -30,20 +29,17 @@ public class RecordResource {
 
     RecordRepository recordRepository;
     UserRepository userRepository;
-    AESAdapter aesAdapter;
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public RecordResource(RecordRepository recordRepository, UserRepository userRepository, AESAdapter aesAdapter) {
+    public RecordResource(RecordRepository recordRepository, UserRepository userRepository) {
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
-        this.aesAdapter = aesAdapter;
     }
 
     @POST
     public Response createRecord(@Valid CreateRecordRequest req) {
 
-        String phoneNumber = this.aesAdapter.tryEncrypt(req.from());
-        User user = this.userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
+        User user = this.userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", req.from()))
                 .firstResultOptional().orElseThrow(ForbiddenException::new);
 
         QuarkusTransaction.begin();

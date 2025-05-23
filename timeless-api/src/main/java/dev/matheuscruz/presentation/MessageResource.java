@@ -2,6 +2,11 @@ package dev.matheuscruz.presentation;
 
 import java.math.BigDecimal;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,36 +19,27 @@ import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.ai.TimelessAiService;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
-import dev.matheuscruz.infra.security.AESAdapter;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/messages")
 public class MessageResource {
 
-    private final UserRepository userRepository;
+    UserRepository userRepository;
     TimelessAiService aiService;
     RecordRepository recordRepository;
-    AESAdapter aesAdapter;
     ObjectMapper mapper;
     String assetsBucket;
 
-    public MessageResource(TimelessAiService aiService, RecordRepository recordRepository, AESAdapter aesAdapter,
-            ObjectMapper mapper, @ConfigProperty(name = "assets.bucket") String assetsBucket,
-            UserRepository userRepository) {
+    public MessageResource(TimelessAiService aiService, RecordRepository recordRepository, ObjectMapper mapper,
+            @ConfigProperty(name = "assets.bucket") String assetsBucket, UserRepository userRepository) {
         this.aiService = aiService;
         this.recordRepository = recordRepository;
-        this.aesAdapter = aesAdapter;
         this.mapper = mapper;
         this.assetsBucket = assetsBucket;
         this.userRepository = userRepository;
@@ -54,8 +50,7 @@ public class MessageResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response message(@Valid MessageRequest req) {
 
-        String phoneNumber = this.aesAdapter.tryEncrypt(req.from());
-        User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
+        User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", req.from()))
                 .firstResultOptional().orElseThrow(NotFoundException::new);
 
         String json = aiService.identifyTransaction(req.message());

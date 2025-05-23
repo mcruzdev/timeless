@@ -1,0 +1,20 @@
+<h1 class="text-xl font-thin my-2">Seja bem-vindo ao <span class="font-bold">Timeless</span> 🕰</h1>
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col w-[300px] gap-2">
+  <p-float-label variant="in">
+    <input id="email" class="w-full text-center font-medium" type="text" pSize="small" pInputText
+           formControlName="email"
+           autocomplete="false"/>
+    <label for="email">Digite seu e-mail</label>
+  </p-float-label>
+  <p-float-label variant="in">
+    <input id="password" class="w-full text-center font-medium" type="password" pSize="small" pInputText
+           formControlName="password"
+           autocomplete="false"/>
+    <label for="password">Digite sua senha</label>
+  </p-float-label>
+  <p-button [style]="{'width': '100%'}" label="Entrar" severity="primary" size="small"
+            (onClick)="onSubmit()"></p-button>
+  <p class="text-xs text-center font-extralight">Não possui uma conta? Crie uma <a [routerLink]="['sign-up']"
+                                                                                   class="primary-emphasis font-normal">aqui</a>.
+  </p>
+</form>

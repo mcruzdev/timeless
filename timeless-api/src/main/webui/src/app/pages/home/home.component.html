@@ -1,49 +1,34 @@
 <p-toolbar [style]="{ 'border': 'none', 'border-radius': 0, 'padding': '1rem 1rem 1rem 1.5rem' }">
+
   <ng-template #start>
     <div class="flex items-center gap-2">
-      <h1 class="text-xl font-thin cursor-pointer" [routerLink]="['/home']">🕰</h1>
+      <h1 class="text-xl font-thin cursor-pointer" [routerLink]="['/home']"><p class="font-bold">Timeless</p></h1>
     </div>
   </ng-template>
 
   <ng-template #end>
     <div class="flex items-center gap-2">
-      <p-avatar size="normal" [textContent]="'M'"
+      <p-avatar size="normal" [textContent]="userInitials"
                 [style]="{ width: '32px', height: '32px', cursor: 'pointer' }"/>
     </div>
   </ng-template>
 </p-toolbar>
+<p-menubar [model]="items" [style]="{ 'border': 'none', 'border-radius': 0, 'padding': '1rem 1rem 1rem 1rem' }"/>
 
-<main class="flex flex-col justify-center w-12/12 h-full">
-  <div class="flex flex-row gap-2 w-full items-center p-4">
-    <p-button severity="contrast" (click)="changeEyes()">
-      <i class="hover:cursor-pointer pi" [class.pi-eye]="eyes" [class.pi-eye-slash]="!eyes"></i>
-    </p-button>
-    @if (eyes) {
-      <p class="flex-1 text-base font-light">{{ balance | currency: 'BRL' }}</p>
-    } @else {
-      <p class="flex-1 text-base font-light">••••••</p>
-    }
-  </div>
+<main class="flex flex-col justify-center w-12/12 h-full p-2">
 
-  <p-table [value]="records">
-    <ng-template #header>
-      <tr>
-        <th class="text-sm">Amount</th>
-        <th class="text-sm">Description</th>
-        <th class="text-sm">Type</th>
-        <th class="text-sm">Date</th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-record>
-      <tr>
-        <td class="text-sm">{{ record.amount | currency: 'BRL' }}</td>
-        <td class="text-sm">{{ record.description }}</td>
-        <td class="text-sm">
-          <p-tag rounded="true" value="{{ record.tag }}" [icon]="record.icon"
-                 [severity]="record.recordType == 'IN' ? 'success' : 'danger'"></p-tag>
-        </td>
-        <td class="text-sm">{{ record.createdAt }}</td>
-      </tr>
-    </ng-template>
-  </p-table>
+  @if (!hasPhoneNumber()) {
+    <p-message [life]="5000" variant="text" closable styleClass="gap-2 p-2">
+      <p class="text-sm font-normal">Verificamos que você não tem um número de
+        telefone cadastrado, cadastre-o
+        para
+        ter acesso ao bot
+        via WhatsApp. <br>
+        <a [routerLink]="['/home/user-configs']" class="text-white">Cadastre seu telefone aqui.</a>
+      </p>
+    </p-message>
+  }
+
+  <router-outlet></router-outlet>
+
 </main>

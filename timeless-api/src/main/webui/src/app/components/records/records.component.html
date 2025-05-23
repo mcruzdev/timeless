@@ -1,0 +1,32 @@
+<div class="flex flex-row gap-2 w-full items-center p-4">
+  <p-button severity="contrast" (click)="changeEyes()">
+    <i class="hover:cursor-pointer pi" [class.pi-eye]="eyes()" [class.pi-eye-slash]="!eyes()"></i>
+  </p-button>
+  @if (eyes()) {
+    <p class="flex-1 text-base font-light">{{ balance() | currency: 'BRL' }}</p>
+  } @else {
+    <p class="flex-1 text-base font-light">••••••</p>
+  }
+</div>
+
+<p-table [value]="records">
+  <ng-template #header>
+    <tr>
+      <th class="text-sm">Amount</th>
+      <th class="text-sm">Description</th>
+      <th class="text-sm">Type</th>
+      <th class="text-sm">Date</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-record>
+    <tr>
+      <td class="text-sm">{{ record.amount | currency: 'BRL' }}</td>
+      <td class="text-sm">{{ record.description }}</td>
+      <td class="text-sm">
+        <p-tag rounded="true" value="{{ record.tag }}" [icon]="record.icon"
+               [severity]="record.recordType == 'IN' ? 'success' : 'danger'"></p-tag>
+      </td>
+      <td class="text-sm">{{ record.createdAt }}</td>
+    </tr>
+  </ng-template>
+</p-table>

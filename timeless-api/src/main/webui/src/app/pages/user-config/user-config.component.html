@@ -1,0 +1,45 @@
+<div class="flex flex-col items-center justify-center p-8">
+  <p-card header="Dados pessoais">
+
+    <div class="flex flex-col gap-2">
+
+      <div class="flex flex-row gap-2">
+        <div class="flex flex-col">
+          <label for="firstName">First name</label>
+          <input pInputText pSize="small" disabled id="firstName"
+                 [value]="userInfo().firstName"/>
+        </div>
+        <div class="flex flex-col">
+          <label for="firstName">Last name</label>
+          <input pInputText pSize="small" disabled id="lastName"
+                 [value]="userInfo().lastName"/>
+        </div>
+      </div>
+
+      <div class="flex flex-col">
+        <label for="firstName">Email</label>
+        <input pInputText pSize="small" disabled id="email"
+               [value]="userInfo().email"/>
+      </div>
+
+      <div class="flex flex-row gap-2">
+        <div class="flex flex-col">
+          <label for="firstName">Password</label>
+          <input pInputText pSize="small" disabled id="password" type="password"
+                 value="******"/>
+        </div>
+
+        <div class="flex flex-col">
+          <label for="firstName">Phone number</label>
+          <p-inputmask [disabled]="userInfo().hasPhoneNumber" mask="(99) 99999-9999" size="small" placeholder="(99) 99999-9999"
+                       [(ngModel)]="userInfo().phoneNumber"/>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <p-button [disabled]="userInfo().hasPhoneNumber" severity="contrast" icon="pi pi-save" size="small" iconPos="left" [style]="{'width': '100%'}"
+                label="Salvar" (click)="update()"/>
+    </ng-template>
+  </p-card>
+</div>

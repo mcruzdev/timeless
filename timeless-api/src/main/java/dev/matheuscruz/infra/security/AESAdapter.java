@@ -13,12 +13,11 @@ import javax.crypto.spec.SecretKeySpec;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.InternalServerErrorException;
 
 @ApplicationScoped
 public class AESAdapter {
 
-    String secret;
+    final String secret;
 
     public AESAdapter(@ConfigProperty(name = "security.sensible.secret") String secret) {
         this.secret = secret;
@@ -41,14 +40,4 @@ public class AESAdapter {
         byte[] original = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         return new String(original);
     }
-
-    public String tryEncrypt(String input) {
-        try {
-            return this.encrypt(input);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException
-                | InvalidKeyException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
 }
