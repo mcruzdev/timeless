@@ -41,6 +41,6 @@ public class SignUpResource {
     }
 
     public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8) String password,
-                                @NotBlank String firstName, @NotBlank String lastName) {
+            @NotBlank String firstName, @NotBlank String lastName) {
     }
 }

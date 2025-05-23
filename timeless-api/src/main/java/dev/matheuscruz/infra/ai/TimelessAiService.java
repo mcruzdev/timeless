@@ -14,7 +14,7 @@ public interface TimelessAiService {
 
             {
               "amount": number,         // The monetary value involved, e.g., 19.00
-              "description": string,    // A short description of the transaction (e.g., what was bought/sold/received)
+              "description": string,    // A short description of the transaction (e.g., What was Bought/Sold/Received)
               "type": "IN" | "OUT",     // "IN" if the user received money, "OUT" if the user paid or spent money
               "error": boolean          // true if any required information is missing or ambiguous
             }
@@ -34,7 +34,7 @@ public interface TimelessAiService {
             Output:
             {
               "amount": 35.00,
-              "description": "gas at shopping mall station",
+              "description": "Gas at shopping mall station",
               "type": "OUT",
               "error": false
             }
@@ -44,7 +44,7 @@ public interface TimelessAiService {
             Output:
             {
               "amount": 500.00,
-              "description": "freelance job",
+              "description": "Freelance job",
               "type": "IN",
               "error": false
             }

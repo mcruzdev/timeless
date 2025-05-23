@@ -43,7 +43,7 @@ const openai = new OpenAI({
 })
 
 const client = new Client({
-    clientId: "me",
+    clientId: "timeless-bot",
     authStrategy: new LocalAuth({
         dataPath: "wwebjs-auth",
     }),
@@ -70,7 +70,8 @@ client.on("message", async (message) => {
 
     const users = JSON.parse([].concat(data))
 
-    if (!users.includes((await message.getContact()).id.user)) {
+    const sender = (await message.getContact()).id.user
+    if (!users.includes(sender)) {
         return
     }
 
@@ -80,9 +81,9 @@ client.on("message", async (message) => {
             console.log("mimetype rejected: ", media.mimetype)
             return
         }
-        await handleMediaMessage(message, media)
+        await handleMediaMessage(message, media, sender)
     } else {
-        handleTextMessage(message)
+        await handleTextMessage(message, sender)
     }
 })
 
@@ -125,6 +126,8 @@ const handleImageMessage = async (message, media) => {
         amount: data.amount,
         description: data.description,
     })
+
+    message.react("✅")
 }
 
 /**
@@ -175,11 +178,11 @@ const handleAudioMessage = async (message, media) => {
  *
  * @param {WAWebJS.Message} message
  */
-const handleTextMessage = (message) => {
+const handleTextMessage = async (message, sender) => {
     timelessApiClient
         .post("/api/messages", {
-            from: contact.id.user,
-            message,
+            from: sender,
+            message: message.body,
         })
         .then(() => {
             return message.react("✅")

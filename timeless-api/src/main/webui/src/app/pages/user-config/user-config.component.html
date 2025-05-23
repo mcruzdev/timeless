@@ -31,14 +31,14 @@
 
         <div class="flex flex-col">
           <label for="firstName">Phone number</label>
-          <p-inputmask [disabled]="userInfo().hasPhoneNumber" mask="(99) 99999-9999" size="small" placeholder="(99) 99999-9999"
+          <p-inputmask  mask="+55 (99) 99999-9999" size="small" placeholder="+55 (99) 99999-9999"
                        [(ngModel)]="userInfo().phoneNumber"/>
         </div>
       </div>
     </div>
 
     <ng-template #footer>
-      <p-button [disabled]="userInfo().hasPhoneNumber" severity="contrast" icon="pi pi-save" size="small" iconPos="left" [style]="{'width': '100%'}"
+      <p-button severity="contrast" icon="pi pi-save" size="small" iconPos="left" [style]="{'width': '100%'}"
                 label="Salvar" (click)="update()"/>
     </ng-template>
   </p-card>

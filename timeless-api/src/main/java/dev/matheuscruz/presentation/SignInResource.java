@@ -38,7 +38,8 @@ public class SignInResource {
         String token = Jwt.upn(user.getId()).groups(Set.of(Groups.USER.groupName())).expiresIn(Duration.ofDays(1))
                 .sign();
 
-        return Response.ok(new SignInResponse(token, user.getId(), user.fullName(), req.email(), user.hasPhoneNumber())).build();
+        return Response.ok(new SignInResponse(token, user.getId(), user.fullName(), req.email(), user.hasPhoneNumber()))
+                .build();
     }
 
     public record SignInRequest(String email, String password) {

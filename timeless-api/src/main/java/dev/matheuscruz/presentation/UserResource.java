@@ -17,9 +17,7 @@ public class UserResource {
 
     final UserRepository userRepository;
 
-    public UserResource(
-            UserRepository userRepository
-    ) {
+    public UserResource(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -27,8 +25,7 @@ public class UserResource {
     @Transactional
     public Response update(PatchUserRequest req) {
 
-        User user = this.userRepository.find("id = :id", Parameters.with("id", req.id()))
-                .firstResultOptional()
+        User user = this.userRepository.find("id = :id", Parameters.with("id", req.id())).firstResultOptional()
                 .orElseThrow(ForbiddenException::new);
 
         user.addPhoneNumber(req.phoneNumber());
@@ -42,11 +39,11 @@ public class UserResource {
     @Path("/{id}")
     public Response getUserInfo(@PathParam("id") String userId) {
 
-        User user = this.userRepository.find("id = :id", Parameters.with("id", userId))
-                .firstResultOptional()
+        User user = this.userRepository.find("id = :id", Parameters.with("id", userId)).firstResultOptional()
                 .orElseThrow(ForbiddenException::new);
 
-        return Response.ok(new UserInfoResponse(user.getId(), user.getEmail(), user.getPhoneNumber(), user.getFirstName(), user.getLastName(), user.getPhoneNumber() != null)).build();
+        return Response.ok(new UserInfoResponse(user.getId(), user.getEmail(), user.getPhoneNumber(),
+                user.getFirstName(), user.getLastName(), user.getPhoneNumber() != null)).build();
     }
 
     public record PatchUserRequest(String phoneNumber, String id) {

@@ -2,11 +2,6 @@ package dev.matheuscruz.presentation;
 
 import java.math.BigDecimal;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +18,11 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -49,7 +48,6 @@ public class MessageResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response message(@Valid MessageRequest req) {
-
         User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", req.from()))
                 .firstResultOptional().orElseThrow(NotFoundException::new);
 
@@ -84,6 +82,6 @@ public class MessageResource {
     public record AiResponse(BigDecimal amount, String description, Boolean error, RecordType type) {
     }
 
-    public record MessageRequest(@NotBlank String from, @NotBlank @Size(min = 10) String message) {
+    public record MessageRequest(@NotBlank String from, @NotBlank String message) {
     }
 }

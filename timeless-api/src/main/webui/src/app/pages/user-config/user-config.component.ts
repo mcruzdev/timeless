@@ -44,7 +44,7 @@ export class UserConfigComponent {
         this.messageService.add({
           key: "toast",
           severity: "success",
-          summary: "Beleza",
+          summary: "Tudo certo!",
           detail: "Seus dados foram atualizados"
         })
       });

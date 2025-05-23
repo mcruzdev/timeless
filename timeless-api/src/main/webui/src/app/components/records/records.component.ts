@@ -31,9 +31,9 @@ export class RecordsComponent {
           icon: item.recordType === 'OUT' ? 'pi pi-arrow-circle-up' : 'pi pi-arrow-circle-down'
         }))
 
-        this.records.map(item => {
+        this.balance.set(this.records.map(item => {
           return item.recordType === 'OUT' ? item.amount * -1 : item.amount
-        });
+        }).reduce((previousValue, currentValue) => (previousValue + currentValue)))
       }
     })
   }
