@@ -45,8 +45,8 @@ const timelessApiClient = require("./axios")
 const awsRegion = "sa-east-1"
 
 const awsCredentials = {
-    accessKeyId: process.env.ACCESS_KEY,
-    secretAccessKey: process.env.SECRET_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 }
 
 const s3Client = new S3Client({
@@ -267,8 +267,7 @@ const generateSimpleAudioName = () =>
     `${crypto.randomUUID().toLocaleLowerCase()}.mp3`
 
 const consumer = Consumer.create({
-    queueUrl:
-        "https://sqs.sa-east-1.amazonaws.com/405894840898/messages-processed.fifo",
+    queueUrl: process.env.MESSAGES_PROCESSED_FIFO_URL,
     sqs: sqsClient,
     suppressFifoWarning: true,
     handleMessage: async (message) => {
