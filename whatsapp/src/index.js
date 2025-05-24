@@ -7,9 +7,18 @@ const fs = require("fs")
 const { tmpdir } = require("os")
 const { createClient } = require("redis")
 const path = require("path")
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
+const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs")
+const { Consumer } = require("sqs-consumer")
 
 const allowedMedias = ["image/jpeg", "audio/ogg; codecs=opus"]
 const usersKey = "timeless-api:users"
+
+const currencyFormatter = Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+})
 
 let redis
 createClient({
@@ -33,6 +42,22 @@ createClient({
     })
 
 const timelessApiClient = require("./axios")
+const awsRegion = "sa-east-1"
+
+const awsCredentials = {
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_KEY,
+}
+
+const s3Client = new S3Client({
+    region: awsRegion,
+    credentials: awsCredentials,
+})
+
+const sqsClient = new SQSClient({
+    region: awsRegion,
+    credentials: awsCredentials,
+})
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -54,6 +79,7 @@ client.on("qr", (qr) => {
 
 client.on("ready", () => {
     console.log("client connected")
+    consumer.start()
 })
 
 client.on("message", async (message) => {
@@ -71,15 +97,23 @@ client.on("message", async (message) => {
         return
     }
 
+    let media
     if (message.hasMedia) {
-        const media = await message.downloadMedia()
+        media = await message.downloadMedia()
+    }
+
+    if (media) {
         if (!allowedMedias.includes(media.mimetype)) {
             console.log("mimetype rejected: ", media.mimetype)
             return
         }
+
         await handleMediaMessage(message, media, sender)
     } else {
         await handleTextMessage(message, sender)
+        const chat = await message.getChat()
+        await chat.sendMessage("Estamos processando sua mensagem")
+        await chat.sendStateTyping()
     }
 })
 
@@ -154,18 +188,21 @@ const handleAudioMessage = async (message, media) => {
  * @param {WAWebJS.Message} message
  */
 const handleTextMessage = async (message, sender) => {
-    timelessApiClient
-        .post("/api/messages", {
-            from: sender,
-            message: message.body,
+    const messageId = message.id.id
+    await sqsClient.send(
+        new SendMessageCommand({
+            QueueUrl: process.env.INCOMING_MESSAGE_QUEUE,
+            MessageGroupId: "IncomingMessagesFromUser",
+            MessageBody: JSON.stringify({
+                sender,
+                kind: "text",
+                messageId,
+                chat: (await message.getChat()).id,
+                status: "READ",
+                messageBody: message.body,
+            }),
         })
-        .then(() => {
-            return message.react("✅")
-        })
-        .catch((err) => {
-            console.error(err)
-            return message.react("❌")
-        })
+    )
 }
 
 /**
@@ -174,6 +211,38 @@ const handleTextMessage = async (message, sender) => {
  * @param {WAWebJS.MessageMedia} media
  */
 const handleMediaMessage = async (message, media) => {
+    if (!mimetypeFileMap[media.mimetype]) {
+        return
+    }
+
+    const file = mimetypeFileMap[media.mimetype]
+
+    const key = `messages/${sender}/${message.id.id}/${file.name}`
+    await s3Client.send(
+        new PutObjectCommand({
+            Bucket: process.env.ASSETS_BUCKET,
+            Key: key,
+            Body: Buffer.from(media.data, "base64"),
+            ContentEncoding: "base64",
+            ContentType: media.mimetype,
+        })
+    )
+
+    await sqsClient.send(
+        new SendMessageCommand({
+            QueueUrl: process.env.INCOMING_MESSAGE_QUEUE,
+            MessageGroupId: "IncomingMessagesFromUser",
+            MessageBody: JSON.stringify({
+                sender,
+                mediaLocation: key,
+                kind: file.kind,
+                messageId: message.id.id,
+                chat: (await message.getChat()).id,
+                status: "READ",
+            }),
+        })
+    )
+
     if (media.mimetype === "audio/ogg; codecs=opus") {
         await handleAudioMessage(message, media)
     }
@@ -183,7 +252,56 @@ const handleMediaMessage = async (message, media) => {
     }
 }
 
+const mimetypeFileMap = {
+    "audio/ogg; codecs=opus": {
+        name: "audio.mp3",
+        kind: "audio",
+    },
+    "image/jpeg": {
+        name: "image.jpg",
+        kind: "image",
+    },
+}
+
 const generateSimpleAudioName = () =>
     `${crypto.randomUUID().toLocaleLowerCase()}.mp3`
+
+const consumer = Consumer.create({
+    queueUrl:
+        "https://sqs.sa-east-1.amazonaws.com/405894840898/messages-processed.fifo",
+    sqs: sqsClient,
+    suppressFifoWarning: true,
+    handleMessage: async (message) => {
+        const data = JSON.parse(message.Body)
+        console.log(data)
+        try {
+            const chats = await client.getChats()
+            chats.forEach(async (chat) => {
+                if (chat.id.user === data.chat.user) {
+                    if (data.withError) {
+                        chat.sendMessage(
+                            "Desculpe-me! Não foi possível cadastrar a sua movimentação"
+                        )
+                    } else {
+                        chat.sendMessage(
+                            `Sua movimentação foi cadastrada com sucesso ✅
+
+*Descrição:* ${data.record.description}
+*Valor:* ${currencyFormatter.format(data.record.amount)}
+*Tipo:* ${data.record.type === "IN" ? "Entrada" : "Saída"}
+                        `
+                        )
+                    }
+                }
+            })
+
+            return message
+        } catch (err) {
+            console.err(err)
+            // do not delete the message
+            return {}
+        }
+    },
+})
 
 client.initialize()

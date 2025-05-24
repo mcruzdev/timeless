@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.matheuscruz</groupId>
     <artifactId>timeless-api</artifactId>
@@ -91,6 +92,10 @@
             <artifactId>quarkus-amazon-s3</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkiverse.amazonservices</groupId>
+            <artifactId>quarkus-amazon-sqs</artifactId>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
         </dependency>
@@ -121,6 +126,10 @@
             <version>${quarkus-mailpit.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -171,7 +180,8 @@
                 </executions>
                 <configuration>
                     <systemPropertyVariables>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner
+                        </native.image.path>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
@@ -182,35 +192,35 @@
                 <artifactId>impsort-maven-plugin</artifactId>
                 <version>1.12.0</version>
                 <configuration>
-                  <groups>java.,javax.,org.,com.</groups>
-                  <staticGroups>java,*</staticGroups>
-                  <removeUnused>true</removeUnused>
-                  <excludes>
-                    <exclude>**/thrift/*.java</exclude>
-                  </excludes>
+                    <groups>java.,javax.,org.,com.</groups>
+                    <staticGroups>java,*</staticGroups>
+                    <removeUnused>true</removeUnused>
+                    <excludes>
+                        <exclude>**/thrift/*.java</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
-                  <execution>
-                    <id>sort-imports</id>
-                    <goals>
-                      <goal>sort</goal><!-- runs at process-sources phase by default -->
-                    </goals>
-                  </execution>
+                    <execution>
+                        <id>sort-imports</id>
+                        <goals>
+                            <goal>sort</goal><!-- runs at process-sources phase by default -->
+                        </goals>
+                    </execution>
                 </executions>
-              </plugin>
-              <plugin>
+            </plugin>
+            <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.26.0</version>
                 <executions>
-                  <execution>
-                    <goals>
-                      <goal>format</goal>
-                      <goal>validate</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
                 </executions>
-              </plugin>
+            </plugin>
         </plugins>
     </build>
 

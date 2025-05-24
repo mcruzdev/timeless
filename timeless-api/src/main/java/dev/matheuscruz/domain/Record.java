@@ -41,6 +41,11 @@ public class Record {
         this.createdAt = Instant.now();
     }
 
+    public static Record create(String userId, BigDecimal amount, String description, RecordType type) {
+        return new Record(userId, amount, description, type,
+                type.equals(RecordType.IN) ? OutcomeType.NONE : OutcomeType.GENERAL);
+    }
+
     public static Record createIncome(String userId, BigDecimal amount, String description) {
         return new Record(userId, amount, description, RecordType.IN, OutcomeType.NONE);
     }
