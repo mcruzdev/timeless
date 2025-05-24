@@ -142,8 +142,10 @@ npm run start
 1. Open the sign-up page at [http://localhost:8080/sign-up](http://localhost:8080/sign-up).
 2. Fill out the registration form with your details and submit it.
 3. Log in to your account at [http://localhost:8080](http://localhost:8080).
-4. Send a WhatsApp message to the scanned number with the following phrase:  
+4. Add your phone number on the [User Configs page](http://localhost:8080/home/user-configs).  
+   ⚠️ Make sure the phone number matches one of the values defined in the `ALLOW_USERS` environment variable.
+5. Send a WhatsApp message to the scanned number with the following phrase:  
    **`Comprei um café 80,00 reais`**
-5. Refresh the page and see your balance go negative — good luck managing your expenses!
+6. Refresh the page and see your balance go negative — good luck managing your expenses!
 
 
