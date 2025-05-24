@@ -32,12 +32,8 @@ createClient({
             })
     })
 
-const { processImagePrompt } = require("./prompts")
-
-// timeless-api
 const timelessApiClient = require("./axios")
 
-// OpenAI
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 })
@@ -95,40 +91,18 @@ client.on("message", async (message) => {
 const handleImageMessage = async (message, media) => {
     const contact = await message.getContact()
 
-    const response = await openai.responses.create({
-        model: "gpt-4.1-mini",
-        input: [
-            {
-                role: "user",
-                content: [
-                    {
-                        type: "input_text",
-                        text: processImagePrompt(message.body),
-                    },
-                    {
-                        type: "input_image",
-                        image_url: `data:image/jpeg;base64,${media.data}`,
-                    }
-                ],
-            },
-        ],
-    })
-
-    const data = JSON.parse(response.output_text)
-
-    if (data.error) {
-        message.reply("Hmmmm... Não foi possível processar sua imagem")
-        return
+    try {
+        await timelessApiClient.post("/api/messages/image", {
+            from: contact.id.user,
+            text: message.body,
+            base64: media.data,
+            mimeType: media.mimetype,
+        })
+        await message.react("✅")
+    } catch (err) {
+        console.error(err.message)
+        await message.react("❌")
     }
-
-    await timelessApiClient.post("/api/records", {
-        from: contact.id.user,
-        recordType: data.type,
-        amount: data.amount,
-        description: data.description,
-    })
-
-    message.react("✅")
 }
 
 /**
