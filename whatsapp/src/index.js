@@ -94,6 +94,7 @@ client.on("message", async (message) => {
  */
 const handleImageMessage = async (message, media) => {
     const contact = await message.getContact()
+
     const response = await openai.responses.create({
         model: "gpt-4.1-mini",
         input: [
@@ -102,12 +103,12 @@ const handleImageMessage = async (message, media) => {
                 content: [
                     {
                         type: "input_text",
-                        text: processImagePrompt,
+                        text: processImagePrompt(message.body),
                     },
                     {
                         type: "input_image",
                         image_url: `data:image/jpeg;base64,${media.data}`,
-                    },
+                    }
                 ],
             },
         ],
