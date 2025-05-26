@@ -2,7 +2,10 @@ package dev.matheuscruz.presentation;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +25,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/records")
@@ -31,6 +37,7 @@ public class RecordResource {
     RecordRepository recordRepository;
     UserRepository userRepository;
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    static Instant INSTANT_2025 = LocalDateTime.of(2025, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
 
     public RecordResource(RecordRepository recordRepository, UserRepository userRepository) {
         this.recordRepository = recordRepository;
@@ -64,16 +71,28 @@ public class RecordResource {
         int limit = Integer.parseInt(Optional.of(l).orElse("10"));
 
         long totalRecords = recordRepository.count();
+
         List<RecordItem> output = recordRepository.findAll().page(Page.of(page, limit)).list().stream().map(record -> {
             String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                     .format(formatter);
             return new RecordItem(record.getId(), record.getAmount(), record.getDescription(),
                     record.getRecordType().name(), format);
         }).toList();
-        return Response.ok(new PageRecord(output, totalRecords)).build();
+
+        List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now",
+                Parameters.with("instant", INSTANT_2025).and("now", Instant.now())).list();
+
+        Optional<BigDecimal> totalExpenses = list.stream().filter(item -> item.getRecordType().equals(RecordType.OUT))
+                .map(Record::getAmount).reduce(BigDecimal::add);
+
+        Optional<BigDecimal> totalIn = list.stream().filter(item -> item.getRecordType().equals(RecordType.IN))
+                .map(Record::getAmount).reduce(BigDecimal::add);
+
+        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO),
+                totalIn.orElse(BigDecimal.ZERO))).build();
     }
 
-    public record PageRecord(List<RecordItem> items, Long totalRecords) {
+    public record PageRecord(List<RecordItem> items, Long totalRecords, BigDecimal totalExpenses, BigDecimal totalIn) {
     }
 
     public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {

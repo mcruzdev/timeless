@@ -1,21 +1,45 @@
-<div class="flex flex-row gap-2 w-full items-center p-4">
-  <p-button severity="contrast" (click)="changeEyes()">
-    <i class="hover:cursor-pointer pi" [class.pi-eye]="eyes()" [class.pi-eye-slash]="!eyes()"></i>
-  </p-button>
-  @if (eyes()) {
-    <p class="flex-1 text-base font-light">{{ balance() | currency: 'BRL' }}</p>
-  } @else {
-    <p class="flex-1 text-base font-light">••••••</p>
-  }
+<div class="flex flex-row gap-2 items-center">
+  <h2 class="font-semibold text-2xl">Overview</h2>
+  <div class="flex flex-row gap-2 w-full items-center">
+    <p-button [icon]="eyes() ? 'pi pi-eye-slash' : 'pi pi-eye'" (click)="changeEyes()" [text]="true" rounded="true"/>
+  </div>
 </div>
 
-<p-table [value]="records">
+<div class="flex flex-col md:flex-row gap-2">
+  <p-card styleClass="p-2 min-w-[200px] h-[100px]">
+    <ng-template #header><p class="font-extralight">Saldo</p></ng-template>
+
+    @if (eyes()) {
+      <p class="flex-1 text-base font-semibold text-left">{{ balance() | currency: 'BRL' }}</p>
+    } @else {
+      <p class="flex-1 text-base font-light">••••••</p>
+    }
+  </p-card>
+  <p-card styleClass="p-2 min-w-[200px] h-[100px]">
+    <ng-template #header><p class="font-extralight">Entradas</p></ng-template>
+    @if (eyes()) {
+      <p class="flex-1 text-base font-semibold text-left">{{ totalIn() | currency: 'BRL' }}</p>
+    } @else {
+      <p class="flex-1 text-base font-light">••••••</p>
+    }
+  </p-card>
+  <p-card styleClass="p-2 min-w-[200px] h-[100px]">
+    <ng-template #header><p class="font-extralight">Saídas</p></ng-template>
+    @if (eyes()) {
+      <p class="flex-1 text-base font-semibold text-left">{{ totalExpenses() | currency: 'BRL' }}</p>
+    } @else {
+      <p class="flex-1 text-base font-light">••••••</p>
+    }
+  </p-card>
+</div>
+
+<p-table [value]="records" styleClass="my-2">
   <ng-template #header>
     <tr>
-      <th class="text-sm">Amount</th>
-      <th class="text-sm">Description</th>
-      <th class="text-sm">Type</th>
-      <th class="text-sm">Date</th>
+      <th class="text-sm">Valor</th>
+      <th class="text-sm">Descrição</th>
+      <th class="text-sm">Tipo</th>
+      <th class="text-sm">Data</th>
     </tr>
   </ng-template>
   <ng-template #body let-record>
@@ -31,4 +55,5 @@
   </ng-template>
 </p-table>
 
-<p-paginator (onPageChange)="onPageChange($event)" [rows]="rows()" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[10, 20, 30]" />
+<p-paginator (onPageChange)="onPageChange($event)" [rows]="rows()" [totalRecords]="totalRecords()"
+             [rowsPerPageOptions]="[10, 20, 30]"/>

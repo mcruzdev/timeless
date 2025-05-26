@@ -1,19 +1,21 @@
 import {Component, inject, signal} from '@angular/core';
-import {Button} from 'primeng/button';
 import {TableModule} from 'primeng/table';
 import {Tag} from 'primeng/tag';
 import {CurrencyPipe} from '@angular/common';
 import {RecordResponseItem, TimelessApiService} from '../../timeless-api.service';
 import {Paginator, PaginatorState} from 'primeng/paginator';
+import {Card} from 'primeng/card';
+import {Button} from 'primeng/button';
 
 @Component({
   selector: 'app-records',
   imports: [
-    Button,
     TableModule,
     Tag,
     CurrencyPipe,
-    Paginator
+    Paginator,
+    Card,
+    Button
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.scss'
@@ -26,13 +28,14 @@ export class RecordsComponent {
   first = signal<number>(0)
   rows = signal<number>(10)
   totalRecords = signal<number>(0)
+  totalIn = signal<number>(0);
+  totalExpenses = signal<number>(0);
 
   constructor() {
     this.populatePaginator();
   }
 
   private populatePaginator() {
-    console.log(this.first(), this.rows())
     this.timelessApiService.getRecords(this.first(), this.rows()).subscribe(body => {
       if (body.items.length > 0) {
         this.records = body.items.map(item => ({
@@ -42,10 +45,10 @@ export class RecordsComponent {
         }))
 
         this.totalRecords.set(body.totalRecords)
+        this.totalIn.set(body.totalIn)
+        this.totalExpenses.set(body.totalExpenses)
 
-        this.balance.set(this.records.map(item => {
-          return item.recordType === 'OUT' ? item.amount * -1 : item.amount
-        }).reduce((previousValue, currentValue) => (previousValue + currentValue)))
+        this.balance.set(this.totalIn() - this.totalExpenses())
       }
     })
   }

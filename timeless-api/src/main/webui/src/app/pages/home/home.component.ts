@@ -21,7 +21,6 @@ import {Message} from 'primeng/message';
 })
 export class HomeComponent {
 
-  userInitials = ''
   hasPhoneNumber = signal(true)
 
   items: MenuItem[] = [
@@ -40,9 +39,6 @@ export class HomeComponent {
       this.router.navigate([''])
       return
     }
-    const info = JSON.parse(data)
-    this.userInitials = info.name.at(0).toUpperCase()
-
     this.timelessApiService.userInfo()
       .subscribe((response: any) => {
         this.hasPhoneNumber.set(response.hasPhoneNumber)
