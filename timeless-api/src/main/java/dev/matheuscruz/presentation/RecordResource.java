@@ -1,17 +1,5 @@
 package dev.matheuscruz.presentation;
 
-import java.math.BigDecimal;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-
-import org.jboss.resteasy.reactive.RestQuery;
-
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordType;
@@ -30,6 +18,16 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+import org.jboss.resteasy.reactive.RestQuery;
 
 @Path("/api/records")
 public class RecordResource {
@@ -37,6 +35,7 @@ public class RecordResource {
     RecordRepository recordRepository;
     UserRepository userRepository;
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    static Instant INSTANT_2025 = LocalDateTime.of(2025, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
 
     public RecordResource(RecordRepository recordRepository, UserRepository userRepository) {
         this.recordRepository = recordRepository;
@@ -78,10 +77,8 @@ public class RecordResource {
                     record.getRecordType().name(), format);
         }).toList();
 
-        Instant instant = LocalDateTime.of(2025, 5, 26, 0, 0, 0).toInstant(ZoneOffset.UTC);
-
         List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now",
-                Parameters.with("instant", instant).and("now", Instant.now())).list();
+                Parameters.with("instant", INSTANT_2025).and("now", Instant.now())).list();
 
         Optional<BigDecimal> totalExpenses = list.stream().filter(item -> item.getRecordType().equals(RecordType.OUT))
                 .map(Record::getAmount).reduce(BigDecimal::add);
