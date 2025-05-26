@@ -63,6 +63,8 @@ interface SignInResponse {
 export interface RecordPageResponse {
   items: RecordResponseItem[]
   totalRecords: number
+  totalIn: number
+  totalExpenses: number
 }
 
 export interface RecordResponseItem {

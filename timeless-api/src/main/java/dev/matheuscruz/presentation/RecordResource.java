@@ -2,7 +2,10 @@ package dev.matheuscruz.presentation;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -64,23 +67,37 @@ public class RecordResource {
         int limit = Integer.parseInt(Optional.of(l).orElse("10"));
 
         long totalRecords = recordRepository.count();
+
         List<RecordItem> output = recordRepository.findAll().page(Page.of(page, limit)).list().stream().map(record -> {
             String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                     .format(formatter);
             return new RecordItem(record.getId(), record.getAmount(), record.getDescription(),
                     record.getRecordType().name(), format);
         }).toList();
-        return Response.ok(new PageRecord(output, totalRecords)).build();
+
+        Instant instant = LocalDateTime.of(2025, 5, 26, 0, 0, 0).toInstant(ZoneOffset.UTC);
+
+        List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now", Parameters.with("instant", instant).and("now", Instant.now())).list();
+
+        Optional<BigDecimal> totalExpenses = list.stream().filter(item -> item.getRecordType().equals(RecordType.OUT))
+                .map(Record::getAmount)
+                .reduce(BigDecimal::add);
+
+        Optional<BigDecimal> totalIn = list.stream().filter(item -> item.getRecordType().equals(RecordType.IN))
+                .map(Record::getAmount)
+                .reduce(BigDecimal::add);
+
+        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO), totalIn.orElse(BigDecimal.ZERO))).build();
     }
 
-    public record PageRecord(List<RecordItem> items, Long totalRecords) {
+    public record PageRecord(List<RecordItem> items, Long totalRecords, BigDecimal totalExpenses, BigDecimal totalIn) {
     }
 
     public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {
     }
 
     public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
-            @NotNull RecordType recordType, @NotBlank String from) {
+                                      @NotNull RecordType recordType, @NotBlank String from) {
     }
 
 }

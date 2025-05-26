@@ -6,16 +6,11 @@
     </div>
   </ng-template>
 
-  <ng-template #end>
-    <div class="flex items-center gap-2">
-      <p-avatar size="normal" [textContent]="userInitials"
-                [style]="{ width: '32px', height: '32px', cursor: 'pointer' }"/>
-    </div>
-  </ng-template>
+  <ng-template #end></ng-template>
 </p-toolbar>
 <p-menubar [model]="items" [style]="{ 'border': 'none', 'border-radius': 0, 'padding': '1rem 1rem 1rem 1rem' }"/>
 
-<main class="flex flex-col justify-center w-12/12 h-full p-2">
+<main class="flex flex-col justify-center w-12/12 h-full p-8">
 
   @if (!hasPhoneNumber()) {
     <p-message [life]="5000" variant="text" closable styleClass="gap-2 p-2">
@@ -28,7 +23,5 @@
       </p>
     </p-message>
   }
-
   <router-outlet></router-outlet>
-
 </main>
