@@ -1,5 +1,17 @@
 package dev.matheuscruz.presentation;
 
+import java.math.BigDecimal;
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
+import org.jboss.resteasy.reactive.RestQuery;
+
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordType;
@@ -18,16 +30,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
-import java.math.BigDecimal;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import org.jboss.resteasy.reactive.RestQuery;
 
 @Path("/api/records")
 public class RecordResource {
