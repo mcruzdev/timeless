@@ -30,3 +30,5 @@
     </tr>
   </ng-template>
 </p-table>
+
+<p-paginator (onPageChange)="onPageChange($event)" [rows]="rows()" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[10, 20, 30]" />

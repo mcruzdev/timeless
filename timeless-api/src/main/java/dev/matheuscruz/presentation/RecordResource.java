@@ -5,6 +5,7 @@ import java.net.URI;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
@@ -12,17 +13,17 @@ import dev.matheuscruz.domain.RecordType;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
+import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestQuery;
 
 @Path("/api/records")
 public class RecordResource {
@@ -57,15 +58,25 @@ public class RecordResource {
     }
 
     @GET
-    public Response getRecords() {
-        List<RecordItem> output = recordRepository.findAll().list().stream().map(record -> {
+    public Response getRecords(@RestQuery("page") String p, @RestQuery("limit") String l) {
+
+        Log.info("page " + p + " limit " + l);
+        int page = Integer.parseInt(Optional.of(p).orElse("0"));
+        int limit = Integer.parseInt(Optional.of(l).orElse("10"));
+
+        long totalRecords = recordRepository.count();
+        List<RecordItem> output = recordRepository.findAll().page(Page.of(page, limit)).list().stream().map(record -> {
             String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                     .format(formatter);
             return new RecordItem(record.getId(), record.getAmount(), record.getDescription(),
                     record.getRecordType().name(), format);
         }).toList();
-        return Response.ok(output).build();
+        return Response.ok(new PageRecord(
+                output, totalRecords
+        )).build();
     }
+
+    public record PageRecord(List<RecordItem> items, Long totalRecords) {}
 
     public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {
     }
