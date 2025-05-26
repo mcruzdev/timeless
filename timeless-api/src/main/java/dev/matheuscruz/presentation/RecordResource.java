@@ -25,7 +25,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/records")
@@ -77,17 +80,17 @@ public class RecordResource {
 
         Instant instant = LocalDateTime.of(2025, 5, 26, 0, 0, 0).toInstant(ZoneOffset.UTC);
 
-        List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now", Parameters.with("instant", instant).and("now", Instant.now())).list();
+        List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now",
+                Parameters.with("instant", instant).and("now", Instant.now())).list();
 
         Optional<BigDecimal> totalExpenses = list.stream().filter(item -> item.getRecordType().equals(RecordType.OUT))
-                .map(Record::getAmount)
-                .reduce(BigDecimal::add);
+                .map(Record::getAmount).reduce(BigDecimal::add);
 
         Optional<BigDecimal> totalIn = list.stream().filter(item -> item.getRecordType().equals(RecordType.IN))
-                .map(Record::getAmount)
-                .reduce(BigDecimal::add);
+                .map(Record::getAmount).reduce(BigDecimal::add);
 
-        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO), totalIn.orElse(BigDecimal.ZERO))).build();
+        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO),
+                totalIn.orElse(BigDecimal.ZERO))).build();
     }
 
     public record PageRecord(List<RecordItem> items, Long totalRecords, BigDecimal totalExpenses, BigDecimal totalIn) {
@@ -97,7 +100,7 @@ public class RecordResource {
     }
 
     public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
-                                      @NotNull RecordType recordType, @NotBlank String from) {
+            @NotNull RecordType recordType, @NotBlank String from) {
     }
 
 }
