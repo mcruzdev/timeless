@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {notNumbers, timelessLocalStorageKey} from './constants';
 
@@ -17,8 +17,13 @@ export class TimelessApiService {
     })
   }
 
-  getRecords(): Observable<RecordResponseItem[]> {
-    return this.httpClient.get<RecordResponseItem[]>('/api/records')
+  getRecords(page: number, size: number): Observable<RecordPageResponse> {
+    const httpParams = new HttpParams()
+    const params = httpParams.append("page", page).append("limit", size)
+    console.log(params)
+    return this.httpClient.get<RecordPageResponse>('/api/records', {
+      params
+    })
   }
 
   signUp(value: any) {
@@ -52,6 +57,12 @@ export class TimelessApiService {
 
 interface SignInResponse {
   token: string
+}
+
+
+export interface RecordPageResponse {
+  items: RecordResponseItem[]
+  totalRecords: number
 }
 
 export interface RecordResponseItem {
