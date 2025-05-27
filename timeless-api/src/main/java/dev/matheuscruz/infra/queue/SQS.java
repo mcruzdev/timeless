@@ -25,18 +25,16 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 @ApplicationScoped
 public class SQS {
 
-    private final String incomingMessagesUrl;
-    private final String processedMessagesUrl;
-    private final SqsClient sqs;
-    private final ObjectMapper objectMapper;
-    private final TimelessAiService aiService;
-    private final RecordRepository recordRepository;
-    private final UserRepository userRepository;
-    private final Logger logger = Logger.getLogger(SQS.class);
+    final String incomingMessagesUrl;
+    final String processedMessagesUrl;
+    final SqsClient sqs;
+    final ObjectMapper objectMapper;
+    final TimelessAiService aiService;
+    final RecordRepository recordRepository;
+    final UserRepository userRepository;
+    final Logger logger = Logger.getLogger(SQS.class);
 
-    private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper()
-            .configure(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION.mappedFeature(), true)
-            .readerFor(IncomingMessage.class);
+    private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
 
     private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(AiResponse.class);
 
