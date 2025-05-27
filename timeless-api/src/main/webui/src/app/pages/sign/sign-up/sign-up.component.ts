@@ -5,6 +5,8 @@ import {InputText} from 'primeng/inputtext';
 import {Router, RouterLink} from '@angular/router';
 import {FloatLabel} from 'primeng/floatlabel';
 import {TimelessApiService} from '../../../timeless-api.service';
+import {catchError} from 'rxjs';
+import {MessageService} from 'primeng/api';
 
 @Component({
   selector: 'app-sign-up',
@@ -29,14 +31,27 @@ export class SignUpComponent {
     lastName: ['', [Validators.required, Validators.minLength(1)]]
   })
 
-  constructor(private readonly timelessApiService: TimelessApiService, private readonly  router: Router) {
+  constructor(private readonly timelessApiService: TimelessApiService, private readonly router: Router, private readonly messageService: MessageService) {
   }
 
   onSubmit() {
     if (this.form.valid) {
       this.timelessApiService.signUp(this.form.value)
+        .pipe(
+          catchError((err: any) => {
+            if (err.error.message) {
+              this.messageService.add({
+                key: "toast",
+                severity: "error",
+                summary: "Conflito",
+                detail: err.error.message
+              })
+            }
+            return err
+          })
+        )
         .subscribe((_) => {
-            this.router.navigate(['/registered'])
+          this.router.navigate(['/registered'])
         })
     } else {
       this.form.markAllAsTouched();

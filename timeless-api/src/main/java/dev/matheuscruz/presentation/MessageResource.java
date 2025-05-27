@@ -21,6 +21,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/api/messages")
 public class MessageResource {
