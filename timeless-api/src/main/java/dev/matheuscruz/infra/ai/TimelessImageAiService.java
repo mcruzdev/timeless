@@ -49,5 +49,5 @@ public interface TimelessImageAiService {
             {description}
             ---
             """)
-    String identifyTransaction(Image image, String description);
+    String handleTransactionImage(Image image, String description);
 }

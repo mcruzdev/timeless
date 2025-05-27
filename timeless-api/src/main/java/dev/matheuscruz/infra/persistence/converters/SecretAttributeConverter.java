@@ -1,15 +1,13 @@
 package dev.matheuscruz.infra.persistence.converters;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
 import dev.matheuscruz.infra.security.AESAdapter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.AttributeConverter;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 @ApplicationScoped
 public class SecretAttributeConverter implements AttributeConverter<String, String> {

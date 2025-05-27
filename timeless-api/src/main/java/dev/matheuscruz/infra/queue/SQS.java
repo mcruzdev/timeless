@@ -1,21 +1,21 @@
 package dev.matheuscruz.infra.queue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import dev.matheuscruz.domain.Record;
-import dev.matheuscruz.domain.RecordType;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.ai.TimelessAiService;
+import dev.matheuscruz.infra.ai.data.AiCommands;
+import dev.matheuscruz.infra.ai.data.AiResponse;
+import dev.matheuscruz.infra.ai.data.AiSimpleMessageResponse;
+import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
-import dev.matheuscruz.presentation.MessageResource;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.panache.common.Parameters;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.math.BigDecimal;
+import java.io.IOException;
 import java.util.Optional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -28,19 +28,20 @@ public class SQS {
     final String processedMessagesUrl;
     final SqsClient sqs;
     final ObjectMapper objectMapper;
-    final Logger logger = Logger.getLogger(SQS.class);
     final TimelessAiService aiService;
     final RecordRepository recordRepository;
     final UserRepository userRepository;
+    final Logger logger = Logger.getLogger(SQS.class);
 
-    static ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper()
-            .configure(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION.mappedFeature(), true)
-            .readerFor(IncomingMessage.class);
+    private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
+
+    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(AiResponse.class);
 
     public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-messages.queue-url") String incomingMessagesUrl,
             @ConfigProperty(name = "whatsapp.messages-processed.queue-url") String messagesProcessedUrl,
             ObjectMapper objectMapper, TimelessAiService aiService, RecordRepository recordRepository,
             UserRepository userRepository) {
+
         this.sqs = sqs;
         this.incomingMessagesUrl = incomingMessagesUrl;
         this.processedMessagesUrl = messagesProcessedUrl;
@@ -51,69 +52,108 @@ public class SQS {
     }
 
     @Scheduled(every = "5s")
-    public void receive() {
-        sqs.receiveMessage(m -> m.maxNumberOfMessages(10).queueUrl(this.incomingMessagesUrl)).messages()
-                .forEach(message -> {
-                    String handle = message.receiptHandle();
-                    IncomingMessage incomingMessage = toIncomingMessage(message.body());
-
-                    if (incomingMessage.kind().equals("text")) {
-                        handleTextMessage(incomingMessage, handle);
-                    }
-                });
+    public void receiveMessages() {
+        sqs.receiveMessage(req -> req.maxNumberOfMessages(10).queueUrl(incomingMessagesUrl)).messages()
+                .forEach(message -> processMessage(message.body(), message.receiptHandle()));
     }
 
-    private void handleTextMessage(IncomingMessage incomingMessage, String receiptHandle) {
-        try {
-            Optional<User> user = this.userRepository
-                    .find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", incomingMessage.sender()))
-                    .firstResultOptional();
+    private void processMessage(String body, String receiptHandle) {
+        IncomingMessage incomingMessage = parseIncomingMessage(body);
+        if (!MessageKind.TEXT.equals(incomingMessage.kind()))
+            return;
 
-            if (user.isPresent()) {
-                MessageResource.AiResponse aiResponse = this.aiService
-                        .identifyTransaction(incomingMessage.messageBody());
-                logger.info(aiResponse);
-                QuarkusTransaction.requiringNew().run(() -> this.recordRepository.persist(Record
-                        .create(user.get().getId(), aiResponse.amount(), aiResponse.description(), aiResponse.type())));
-                String messageProcessedEvent = this.objectMapper.writeValueAsString(new MessageProcessed(
-                        incomingMessage.messageId(), "PROCESSED", incomingMessage.chat(), aiResponse.error(),
-                        new RecordResponse(aiResponse.description(), aiResponse.amount(), aiResponse.type())));
-                sqs.sendMessage(builder -> builder.messageBody(messageProcessedEvent)
-                        .queueUrl(this.processedMessagesUrl).messageGroupId("ProcessedMessages").build());
-            } else {
-                logger.error("User not found, deleting message from Queue");
+        Optional<User> user = this.userRepository.findByPhoneNumber(incomingMessage.sender());
+
+        if (user.isEmpty()) {
+            logger.error("User not found. Deleting message from queue.");
+            deleteMessageUsing(receiptHandle);
+            return;
+        }
+
+        handleUserMessage(user.get(), incomingMessage, receiptHandle);
+    }
+
+    private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
+        try {
+            AiResponse aiResponse = parseAiResponse(aiService.handleMessage(message.messageBody()));
+
+            switch (aiResponse.operation()) {
+                case AiCommands.ADD_TRANSACTION -> processTransactionMessage(user, message, receiptHandle, aiResponse);
+                case AiCommands.GET_BALANCE -> processSimpleMessage(user, message, receiptHandle, aiResponse);
+                default -> logger.warnf("Unknown operation type: %s", aiResponse.operation());
             }
 
-            // the message deletion can fail
-            // take care about duplications
-            sqs.deleteMessage(builder -> builder.queueUrl(this.incomingMessagesUrl).receiptHandle(receiptHandle));
-
-            logger.infof("message with ID %s processed successfully", incomingMessage.messageId());
-        } catch (JsonProcessingException e) {
-            logger.error(e);
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Failed to process message: " + message.messageId(), e);
         }
     }
 
-    public IncomingMessage toIncomingMessage(String messageBody) {
+    private void processTransactionMessage(User user, IncomingMessage message, String receiptHandle,
+            AiResponse aiResponse) throws IOException {
+        AiTransactionResponse transaction = objectMapper.readValue(aiResponse.content(), AiTransactionResponse.class);
+
+        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(
+                Record.create(user.getId(), transaction.amount(), transaction.description(), transaction.type())));
+
+        sendProcessedMessage(
+                new TransactionMessageProcessed(AiCommands.ADD_TRANSACTION.commandName(), message.messageId(),
+                        MessageStatus.PROCESSED, user.getPhoneNumber(), transaction.withError(), transaction));
+        deleteMessageUsing(receiptHandle);
+        logger.infof("Message %s processed as ADD_TRANSACTION", message.messageId());
+    }
+
+    private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle, AiResponse aiResponse)
+            throws IOException {
+        AiSimpleMessageResponse response = new AiSimpleMessageResponse(aiResponse.content());
+        sendProcessedMessage(new SimpleMessageProcessed(AiCommands.GET_BALANCE.commandName(), message.messageId(),
+                MessageStatus.PROCESSED, user.getPhoneNumber(), response));
+        deleteMessageUsing(receiptHandle);
+        logger.infof("Message %s processed as GET_BALANCE", message.messageId());
+    }
+
+    private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
+        String messageBody = objectMapper.writeValueAsString(processedMessage);
+        sqs.sendMessage(
+                req -> req.messageBody(messageBody).queueUrl(processedMessagesUrl).messageGroupId("ProcessedMessages"));
+    }
+
+    private AiResponse parseAiResponse(String response) {
+        try {
+            return AI_RESPONSE_READER.readValue(response);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse AI response", e);
+        }
+    }
+
+    private IncomingMessage parseIncomingMessage(String messageBody) {
         try {
             return INCOMING_MESSAGE_READER.readValue(messageBody);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to parse incoming message", e);
         }
     }
 
-    public record MessageProcessed(String messageId, String status, Chat chat, Boolean withError,
-            RecordResponse record) {
+    private void deleteMessageUsing(String receiptHandle) {
+        sqs.deleteMessage(req -> req.queueUrl(incomingMessagesUrl).receiptHandle(receiptHandle));
     }
 
-    public record RecordResponse(String description, BigDecimal amount, RecordType type) {
+    public record TransactionMessageProcessed(String kind, String messageId, MessageStatus status, String user,
+            Boolean withError, AiTransactionResponse content) {
     }
 
-    public record IncomingMessage(String sender, String kind, String messageId, Chat chat, String status,
+    public record SimpleMessageProcessed(String kind, String messageId, MessageStatus status, String user,
+            AiSimpleMessageResponse content) {
+    }
+
+    public record IncomingMessage(String sender, MessageKind kind, String messageId, MessageStatus status,
             String messageBody) {
     }
 
-    public record Chat(String server, String user, String _serialized) {
+    public enum MessageKind {
+        TEXT, AUDIO, IMAGE
+    }
+
+    public enum MessageStatus {
+        READ, PROCESSED
     }
 }

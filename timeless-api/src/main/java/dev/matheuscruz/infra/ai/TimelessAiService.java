@@ -1,73 +1,82 @@
 package dev.matheuscruz.infra.ai;
 
 import dev.langchain4j.service.UserMessage;
-import dev.matheuscruz.domain.notification.NotificationService;
-import dev.matheuscruz.presentation.MessageResource;
+import dev.matheuscruz.infra.ai.tools.GetBalanceTool;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
-@RegisterAiService(tools = { NotificationService.class })
+@RegisterAiService(tools = { GetBalanceTool.class })
 public interface TimelessAiService {
 
     @UserMessage("""
-            You are an assistant that extracts financial transaction data from user messages.
+            You are a smart financial assistant capable of performing two types of operations based on the user's message:
+            1. Extracting financial transaction data.
+            2. Responding with the user's current account balance using available tools.
 
-            Your task is to analyze the content between the --- delimiters and return a JSON object with the following fields:
+            Your task is to analyze the content between the --- delimiters and return a JSON object in the following format:
 
             {
-              "amount": number,         // The monetary value involved, e.g., 19.00
-              "description": string,    // A short description of the transaction (e.g., What was Bought/Sold/Received)
-              "type": "IN" | "OUT",     // "IN" if the user received money, "OUT" if the user paid or spent money
-              "error": boolean          // true if any required information is missing or ambiguous
+              "operation": "ADD_TRANSACTION" | "GET_BALANCE",
+              "content": string // For TRANSACTION: a stringified JSON. For GET_BALANCE: a clear, friendly message in Brazilian Portuguese.
             }
 
-            Instructions:
-            - If the user received money, set "type" to "IN".
-            - If the user spent or paid money, set "type" to "OUT".
-            - If you cannot confidently determine any of the fields, set "error" to true and use default values for the others:
+            ### Rules:
+
+            - If the message describes a financial transaction (e.g., spending or receiving money), set `"operation"` to `"ADD_TRANSACTION"` and return a stringified JSON as `content` with this structure:
+              {
+                "amount": number,             // e.g., 35.00
+                "description": string,        // short transaction description in Brazilian Portuguese
+                "type": "IN" | "OUT",         // "IN" for received money, "OUT" for money spent
+                "withError": boolean              // true if any information is missing or ambiguous
+              }
+
+            - If the message is asking for the account balance (e.g., "how much do I have?", "what's my balance?"), set `"operation"` to `"BALANCE"` and return a clear, polite and helpful sentence in Brazilian Portuguese in the `content`, such as:
+              - "Você possui R$ 2.384,20 disponíveis na sua conta principal."
+              - "Atualmente, seu saldo é de R$ 1.750,00."
+              - "Seu saldo atual é de R$ 3.520,50. Precisa de ajuda com mais alguma coisa?"
+
+            - If the message is ambiguous or any information is missing, return `withError: true` and use default values:
               - amount: 0.00
               - description: ""
               - type: "OUT"
 
-            Examples:
+            ### Examples:
 
             Input:
-            "I paid 35 reais for gas at shopping mall station."
+            "I paid 35 reais at the gas station in the mall."
             Output:
             {
-              "amount": 35.00,
-              "description": "Gas at shopping mall station",
-              "type": "OUT",
-              "error": false
+              "operation": "ADD_TRANSACTION",
+              "content": "{ \\"amount\\": 35.00, \\"description\\": \\"Posto de gasolina do shopping\\", \\"type\\": \\"OUT\\", \\"withError\\": false }"
             }
 
             Input:
             "I received 500 from a freelance job."
             Output:
             {
-              "amount": 500.00,
-              "description": "Freelance job",
-              "type": "IN",
-              "error": false
+              "operation": "ADD_TRANSACTION",
+              "content": "{ \\"amount\\": 500.00, \\"description\\": \\"Trabalho freelance\\", \\"type\\": \\"IN\\", \\"withError\\": false }"
             }
 
             Input:
-            "This audio doesn't contain any purchase information."
+            "How much do I have in my account?"
             Output:
             {
-              "amount": 0.00,
-              "description": "",
-              "type": "OUT",
-              "error": true
+              "operation": "GET_BALANCE",
+              "content": "Você possui R$ 2.384,20 disponíveis na sua conta principal."
             }
 
-            Input (user just wants to send the result by email):
-            - The output must still follow the same JSON format described above.
-
-            Please provide the description in Brazilian Portuguese.
+            Input:
+            "This audio doesn't contain any transaction."
+            Output:
+            {
+              "operation": "ADD_TRANSACTION",
+              "content": "{ \\"amount\\": 0.00, \\"description\\": \\"\\", \\"type\\": \\"OUT\\", \\"withError\\": true }"
+            }
 
             ---
             {message}
             ---
             """)
-    MessageResource.AiResponse identifyTransaction(String message);
+    String handleMessage(String message);
+
 }

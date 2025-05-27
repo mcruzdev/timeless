@@ -1,8 +1,5 @@
 package dev.matheuscruz.presentation;
 
-import java.time.Duration;
-import java.util.Set;
-
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import dev.matheuscruz.infra.security.BCryptAdapter;
@@ -13,6 +10,8 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import java.time.Duration;
+import java.util.Set;
 
 @Path("/api/sign-in")
 public class SignInResource {

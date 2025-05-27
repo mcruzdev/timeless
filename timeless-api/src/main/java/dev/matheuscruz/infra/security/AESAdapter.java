@@ -1,18 +1,15 @@
 package dev.matheuscruz.infra.security;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class AESAdapter {
