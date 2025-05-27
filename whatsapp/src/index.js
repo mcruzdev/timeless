@@ -126,7 +126,6 @@ async function handleTextMessage(message, sender) {
                 sender,
                 kind: "text",
                 messageId,
-                chat: chat.id,
                 status: "READ",
                 messageBody: message.body,
             }),
@@ -140,21 +139,6 @@ async function handleMediaMessage(message, media, sender) {
 
     if (FLAGS.sendMediaToS3) {
         await uploadMediaToS3(message, media, sender)
-
-        await sqsClient.send(
-            new SendMessageCommand({
-                QueueUrl: process.env.INCOMING_MESSAGE_QUEUE,
-                MessageGroupId: "IncomingMediaMessagesFromUser",
-                MessageBody: JSON.stringify({
-                    sender,
-                    mediaLocation: key,
-                    kind: file.kind,
-                    messageId: message.id.id,
-                    chat: (await message.getChat()).id,
-                    status: "READ",
-                }),
-            })
-        )
     }
 
     if (mimetype === "audio/ogg; codecs=opus") {
@@ -236,21 +220,42 @@ const consumer = Consumer.create({
     handleMessage: async (sqsMessage) => {
         try {
             const data = JSON.parse(sqsMessage.Body)
-            console.log(data)
-            const chats = await client.getChats()
-            for (const chat of chats) {
-                if (chat.id.user === data.chat.user) {
-                    await sendMovementResult(chat, data)
-                }
+
+            const chat = await findChatByUser(data.user)
+
+            if (!chat) {
+                console.warn(`Chat not found for user: ${data.user}`)
+                return sqsMessage
             }
+
+            await handleMessageByKind(chat, data)
             return sqsMessage
-        } catch (err) {
-            console.error(err)
-            // Do not delete the message
-            return {}
+        } catch (error) {
+            console.error("Failed to process SQS message:", error)
+            return {} // Don't delete message
         }
     },
 })
+
+async function findChatByUser(userId) {
+    const chats = await client.getChats()
+    return chats.find((chat) => chat.id.user === userId)
+}
+
+async function handleMessageByKind(chat, data) {
+    switch (data.kind) {
+        case "BALANCE":
+            await chat.sendMessage(data.content.message)
+            break
+
+        case "TRANSACTION":
+            await sendMovementResult(chat, data)
+            break
+
+        default:
+            console.warn(`Unsupported message kind: ${data.kind}`)
+    }
+}
 
 async function sendMovementResult(chat, data) {
     if (data.withError) {
@@ -261,9 +266,9 @@ async function sendMovementResult(chat, data) {
         await chat.sendMessage(
             `Sua movimentação foi cadastrada com sucesso ✅
 
-*Descrição:* ${data.record.description}
-*Valor:* ${CURRENCY_FORMATTER.format(data.record.amount)}
-*Tipo:* ${data.record.type === "IN" ? "Entrada" : "Saída"}`
+*Descrição:* ${data.content.description}
+*Valor:* ${CURRENCY_FORMATTER.format(data.content.amount)}
+*Tipo:* ${data.content.type === "IN" ? "Entrada" : "Saída"}`
         )
     }
 }
