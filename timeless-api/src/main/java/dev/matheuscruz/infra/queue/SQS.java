@@ -1,16 +1,9 @@
 package dev.matheuscruz.infra.queue;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordType;
 import dev.matheuscruz.domain.User;
@@ -22,6 +15,10 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.math.BigDecimal;
+import java.util.Optional;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 @ApplicationScoped

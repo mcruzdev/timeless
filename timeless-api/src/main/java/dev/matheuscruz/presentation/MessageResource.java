@@ -1,12 +1,7 @@
 package dev.matheuscruz.presentation;
 
-import java.math.BigDecimal;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import dev.langchain4j.data.image.Image;
 import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
@@ -28,6 +23,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/api/messages")
 public class MessageResource {

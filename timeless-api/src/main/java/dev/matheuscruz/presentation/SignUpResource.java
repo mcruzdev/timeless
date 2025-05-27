@@ -1,11 +1,10 @@
 package dev.matheuscruz.presentation;
 
-import java.net.URI;
-
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import dev.matheuscruz.infra.security.AESAdapter;
 import dev.matheuscruz.infra.security.BCryptAdapter;
+import dev.matheuscruz.presentation.data.Problem;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.validation.Valid;
@@ -15,6 +14,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import java.net.URI;
 
 @Path("/api/sign-up")
 public class SignUpResource {
@@ -30,6 +30,12 @@ public class SignUpResource {
     @POST
     public Response signUp(@Valid SignUpRequest req) {
         Log.info("congratulations! we are creating a new user");
+
+        boolean exists = this.userRepository.existsByEmail(req.email());
+        if (exists) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new Problem("Este nome de usuário já foi usado. Tente outro.")).build();
+        }
 
         User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName());
 
