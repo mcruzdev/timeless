@@ -9,6 +9,7 @@ import dev.matheuscruz.domain.RecordType;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.ai.TimelessAiService;
 import dev.matheuscruz.infra.ai.TimelessImageAiService;
+import dev.matheuscruz.infra.ai.data.AiCommands;
 import dev.matheuscruz.infra.ai.data.AiResponse;
 import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
 import dev.matheuscruz.infra.persistence.RecordRepository;
@@ -18,11 +19,13 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.math.BigDecimal;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/api/messages")
 public class MessageResource {
@@ -46,8 +49,7 @@ public class MessageResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response message(@Valid MessageRequest req) {
-        User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", req.from()))
-                .firstResultOptional().orElseThrow(NotFoundException::new);
+        User user = userRepository.findByPhoneNumber(req.from()).orElseThrow(NotFoundException::new);
         return handleMessage(user, req.message());
     }
 
@@ -78,7 +80,7 @@ public class MessageResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        if ("TRANSACTION".equals(aiResponse.operation())) {
+        if (AiCommands.ADD_TRANSACTION.equals(aiResponse.operation())) {
             return handleTransaction(aiResponse, user);
         }
 
@@ -94,7 +96,7 @@ public class MessageResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        if (transaction.error()) {
+        if (transaction.withError()) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 

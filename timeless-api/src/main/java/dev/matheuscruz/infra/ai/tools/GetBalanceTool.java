@@ -19,8 +19,7 @@ public class GetBalanceTool {
 
     @Tool(value = "get account balance")
     public BigDecimal getBalance() {
-        List<AmountTypeProjection> list = this.recordRepository.find("select r.amount, r.recordType from Record as r")
-                .project(AmountTypeProjection.class).list();
+        List<AmountTypeProjection> list = this.recordRepository.getRecordsWithAmountAndTypeOnly();
         return list.stream()
                 .map(record -> record.getRecordType().equals(RecordType.OUT)
                         ? record.getAmount().multiply(new BigDecimal(-1))

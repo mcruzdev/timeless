@@ -47,11 +47,11 @@ const openai = new OpenAI({
 const mimetypeFileMap = {
     "audio/ogg; codecs=opus": {
         name: "audio.mp3",
-        kind: "audio",
+        kind: "AUDIO",
     },
     "image/jpeg": {
         name: "image.jpg",
-        kind: "image",
+        kind: "IMAGE",
     },
 }
 
@@ -124,7 +124,7 @@ async function handleTextMessage(message, sender) {
             MessageGroupId: "IncomingMessagesFromUser",
             MessageBody: JSON.stringify({
                 sender,
-                kind: "text",
+                kind: "TEXT",
                 messageId,
                 status: "READ",
                 messageBody: message.body,
@@ -228,7 +228,7 @@ const consumer = Consumer.create({
                 return sqsMessage
             }
 
-            await handleMessageByKind(chat, data)
+            await handleMessageByCommandName(chat, data)
             return sqsMessage
         } catch (error) {
             console.error("Failed to process SQS message:", error)
@@ -242,13 +242,13 @@ async function findChatByUser(userId) {
     return chats.find((chat) => chat.id.user === userId)
 }
 
-async function handleMessageByKind(chat, data) {
+async function handleMessageByCommandName(chat, data) {
     switch (data.kind) {
-        case "BALANCE":
+        case "GET_BALANCE":
             await chat.sendMessage(data.content.message)
             break
 
-        case "TRANSACTION":
+        case "ADD_TRANSACTION":
             await sendMovementResult(chat, data)
             break
 

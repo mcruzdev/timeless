@@ -1,19 +1,18 @@
 package dev.matheuscruz.infra.queue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.ai.TimelessAiService;
+import dev.matheuscruz.infra.ai.data.AiCommands;
 import dev.matheuscruz.infra.ai.data.AiResponse;
 import dev.matheuscruz.infra.ai.data.AiSimpleMessageResponse;
 import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.panache.common.Parameters;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
@@ -60,19 +59,18 @@ public class SQS {
 
     private void processMessage(String body, String receiptHandle) {
         IncomingMessage incomingMessage = parseIncomingMessage(body);
-
-        if (!"text".equals(incomingMessage.kind()))
+        if (!MessageKind.TEXT.equals(incomingMessage.kind()))
             return;
 
-        Optional<User> possibleUser = findUserByPhoneNumber(incomingMessage.sender());
+        Optional<User> user = this.userRepository.findByPhoneNumber(incomingMessage.sender());
 
-        if (possibleUser.isEmpty()) {
+        if (user.isEmpty()) {
             logger.error("User not found. Deleting message from queue.");
-            deleteMessage(receiptHandle);
+            deleteMessageUsing(receiptHandle);
             return;
         }
 
-        handleUserMessage(possibleUser.get(), incomingMessage, receiptHandle);
+        handleUserMessage(user.get(), incomingMessage, receiptHandle);
     }
 
     private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
@@ -80,8 +78,8 @@ public class SQS {
             AiResponse aiResponse = parseAiResponse(aiService.handleMessage(message.messageBody()));
 
             switch (aiResponse.operation()) {
-                case "TRANSACTION" -> processTransactionMessage(user, message, receiptHandle, aiResponse);
-                case "BALANCE" -> processSimpleMessage(user, message, receiptHandle, aiResponse);
+                case AiCommands.ADD_TRANSACTION -> processTransactionMessage(user, message, receiptHandle, aiResponse);
+                case AiCommands.GET_BALANCE -> processSimpleMessage(user, message, receiptHandle, aiResponse);
                 default -> logger.warnf("Unknown operation type: %s", aiResponse.operation());
             }
 
@@ -97,30 +95,26 @@ public class SQS {
         QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(
                 Record.create(user.getId(), transaction.amount(), transaction.description(), transaction.type())));
 
-        sendProcessedMessage(new TransactionMessageProcessed("TRANSACTION", message.messageId(), "PROCESSED",
-                user.getPhoneNumber(), transaction.error(), transaction));
-        deleteMessage(receiptHandle);
-        logger.infof("Message %s processed as TRANSACTION", message.messageId());
+        sendProcessedMessage(
+                new TransactionMessageProcessed(AiCommands.ADD_TRANSACTION.commandName(), message.messageId(),
+                        MessageStatus.PROCESSED, user.getPhoneNumber(), transaction.withError(), transaction));
+        deleteMessageUsing(receiptHandle);
+        logger.infof("Message %s processed as ADD_TRANSACTION", message.messageId());
     }
 
     private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle, AiResponse aiResponse)
             throws IOException {
         AiSimpleMessageResponse response = new AiSimpleMessageResponse(aiResponse.content());
-        sendProcessedMessage(new SimpleMessageProcessed("BALANCE", message.messageId(), "PROCESSED",
-                user.getPhoneNumber(), response));
-        deleteMessage(receiptHandle);
-        logger.infof("Message %s processed as BALANCE", message.messageId());
+        sendProcessedMessage(new SimpleMessageProcessed(AiCommands.GET_BALANCE.commandName(), message.messageId(),
+                MessageStatus.PROCESSED, user.getPhoneNumber(), response));
+        deleteMessageUsing(receiptHandle);
+        logger.infof("Message %s processed as GET_BALANCE", message.messageId());
     }
 
     private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
         String messageBody = objectMapper.writeValueAsString(processedMessage);
         sqs.sendMessage(
                 req -> req.messageBody(messageBody).queueUrl(processedMessagesUrl).messageGroupId("ProcessedMessages"));
-    }
-
-    private Optional<User> findUserByPhoneNumber(String phoneNumber) {
-        return userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", phoneNumber))
-                .firstResultOptional();
     }
 
     private AiResponse parseAiResponse(String response) {
@@ -139,19 +133,27 @@ public class SQS {
         }
     }
 
-    private void deleteMessage(String receiptHandle) {
+    private void deleteMessageUsing(String receiptHandle) {
         sqs.deleteMessage(req -> req.queueUrl(incomingMessagesUrl).receiptHandle(receiptHandle));
     }
 
-    public record TransactionMessageProcessed(String kind, String messageId, String status, String user,
+    public record TransactionMessageProcessed(String kind, String messageId, MessageStatus status, String user,
             Boolean withError, AiTransactionResponse content) {
     }
 
-    public record SimpleMessageProcessed(String kind, String messageId, String status, String user,
+    public record SimpleMessageProcessed(String kind, String messageId, MessageStatus status, String user,
             AiSimpleMessageResponse content) {
     }
 
-    public record IncomingMessage(String sender, String kind, String messageId, String user, String status,
+    public record IncomingMessage(String sender, MessageKind kind, String messageId, MessageStatus status,
             String messageBody) {
+    }
+
+    public enum MessageKind {
+        TEXT, AUDIO, IMAGE
+    }
+
+    public enum MessageStatus {
+        READ, PROCESSED
     }
 }
