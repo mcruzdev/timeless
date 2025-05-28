@@ -150,15 +150,24 @@ async function handleMediaMessage(message, media, sender) {
 
 async function handleImageMessage(message, media) {
     const contact = await message.getContact()
+    const chat = await message.getChat()
+
     try {
-        await timelessApiClient.post("/api/messages/image", {
+        const { data } = await timelessApiClient.post("/api/messages/image", {
             from: contact.id.user,
             text: message.body,
             base64: media.data,
             mimeType: media.mimetype,
         })
+            
+        await sendMovementResult(chat, {
+            ...data,
+        })
     } catch (err) {
         console.error(err.message)
+        await chat.sendMessage(
+            "Desculpe-me! Não foi possível cadastrar a sua movimentação"
+        )
         await message.react("❌")
     }
 }
@@ -249,7 +258,12 @@ async function handleMessageByCommandName(chat, data) {
             break
 
         case "ADD_TRANSACTION":
-            await sendMovementResult(chat, data)
+            await sendMovementResult(chat, {
+                withError: data.withError,
+                amount: data.content.amount,
+                description: data.content.description,
+                type: data.content.type,
+            })
             break
 
         default:
@@ -257,8 +271,11 @@ async function handleMessageByCommandName(chat, data) {
     }
 }
 
-async function sendMovementResult(chat, data) {
-    if (data.withError) {
+async function sendMovementResult(
+    chat,
+    { description, amount, type, withError }
+) {
+    if (withError) {
         await chat.sendMessage(
             "Desculpe-me! Não foi possível cadastrar a sua movimentação"
         )
@@ -266,9 +283,9 @@ async function sendMovementResult(chat, data) {
         await chat.sendMessage(
             `Sua movimentação foi cadastrada com sucesso ✅
 
-*Descrição:* ${data.content.description}
-*Valor:* ${CURRENCY_FORMATTER.format(data.content.amount)}
-*Tipo:* ${data.content.type === "IN" ? "Entrada" : "Saída"}`
+*Descrição:* ${description}
+*Valor:* ${CURRENCY_FORMATTER.format(amount)}
+*Tipo:* ${type === "IN" ? "Entrada" : "Saída"}`
         )
     }
 }

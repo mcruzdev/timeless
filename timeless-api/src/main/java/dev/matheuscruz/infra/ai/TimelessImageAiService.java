@@ -2,6 +2,7 @@ package dev.matheuscruz.infra.ai;
 
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.service.UserMessage;
+import dev.matheuscruz.infra.ai.data.AiImageResponse;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
 @RegisterAiService(modelName = "gpt-4-turbo")
@@ -19,7 +20,7 @@ public interface TimelessImageAiService {
               "amount": number,          // Total transaction value (e.g., 99.75)
               "description": string,     // Brief description of the transaction (e.g., product or service)
               "type": "IN" | "OUT",       // "IN" if money was received, "OUT" if money was spent
-              "error": boolean            // true if the data is missing or ambiguous
+              "withError": boolean            // true if the data is missing or ambiguous
             }
 
             Rules:
@@ -35,7 +36,7 @@ public interface TimelessImageAiService {
             - amount: 0.00
             - description: ""
             - type: "OUT"
-            - error: true
+            - withError: true
 
             Important:
             - Do not include any explanations or formatting.
@@ -49,5 +50,5 @@ public interface TimelessImageAiService {
             {description}
             ---
             """)
-    String handleTransactionImage(Image image, String description);
+    AiImageResponse handleTransactionImage(Image image, String description);
 }
