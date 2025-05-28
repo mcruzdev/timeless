@@ -1,4 +1,4 @@
-<div class="flex flex-col items-center justify-center p-8">
+<form [formGroup]="form" (ngSubmit)="update()" class="flex flex-col items-center justify-center p-8">
   <p-card header="Dados pessoais">
 
     <div class="flex flex-col gap-2">
@@ -6,40 +6,40 @@
       <div class="flex flex-row gap-2">
         <div class="flex flex-col">
           <label for="firstName">First name</label>
-          <input pInputText pSize="small" disabled id="firstName"
-                 [value]="userInfo().firstName"/>
+          <input pInputText pSize="small" id="firstName" formControlName="firstName"
+          />
         </div>
         <div class="flex flex-col">
           <label for="firstName">Last name</label>
-          <input pInputText pSize="small" disabled id="lastName"
-                 [value]="userInfo().lastName"/>
+          <input pInputText pSize="small" [disabled]="true" id="lastName"
+                 formControlName="lastName"/>
         </div>
       </div>
 
       <div class="flex flex-col">
-        <label for="firstName">Email</label>
-        <input pInputText pSize="small" disabled id="email"
-               [value]="userInfo().email"/>
+        <label for="email">Email</label>
+        <input pInputText pSize="small" [disabled]="true" id="email"
+               formControlName="email"/>
       </div>
 
       <div class="flex flex-row gap-2">
         <div class="flex flex-col">
-          <label for="firstName">Password</label>
-          <input pInputText pSize="small" disabled id="password" type="password"
+          <label for="password">Password</label>
+          <input pInputText pSize="small" [disabled]="true" id="password" type="password"
                  value="******"/>
         </div>
 
         <div class="flex flex-col">
           <label for="firstName">Phone number</label>
-          <p-inputmask  mask="+55 (99) 99999-9999" size="small" placeholder="+55 (99) 99999-9999"
-                       [(ngModel)]="userInfo().phoneNumber"/>
+          <p-inputmask mask="+55 (99) 99999-9999" size="small" placeholder="+55 (99) 99999-9999"
+                       formControlName="phoneNumber"/>
         </div>
       </div>
     </div>
 
     <ng-template #footer>
       <p-button severity="contrast" icon="pi pi-save" size="small" iconPos="left" [style]="{'width': '100%'}"
-                label="Salvar" (click)="update()"/>
+                type="submit" label="Salvar"/>
     </ng-template>
   </p-card>
-</div>
+</form>
