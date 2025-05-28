@@ -62,4 +62,11 @@ export class RecordsComponent {
     this.rows.set($event.rows || 10)
     this.populatePaginator()
   }
+
+  deleteRecord(id: number) {
+    this.timelessApiService.deleteRecord(id)
+      .subscribe(() => {
+        this.populatePaginator()
+      })
+  }
 }

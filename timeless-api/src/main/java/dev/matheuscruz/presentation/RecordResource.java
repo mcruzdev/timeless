@@ -9,14 +9,17 @@ import dev.matheuscruz.infra.persistence.UserRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -40,6 +43,14 @@ public class RecordResource {
     public RecordResource(RecordRepository recordRepository, UserRepository userRepository) {
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Transactional
+    public Response delete(@PathParam("id") Long id) {
+        recordRepository.deleteById(id);
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     @POST

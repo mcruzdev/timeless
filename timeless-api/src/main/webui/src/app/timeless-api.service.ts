@@ -53,6 +53,10 @@ export class TimelessApiService {
     const user = JSON.parse(data)
     return this.httpClient.get(`/api/users/${user.id}`)
   }
+
+  deleteRecord(id: number) {
+    return this.httpClient.delete(`/api/records/${id}`)
+  }
 }
 
 interface SignInResponse {
