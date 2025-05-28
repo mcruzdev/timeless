@@ -10,13 +10,13 @@ import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.ai.TimelessAiService;
 import dev.matheuscruz.infra.ai.TimelessImageAiService;
 import dev.matheuscruz.infra.ai.data.AiCommands;
+import dev.matheuscruz.infra.ai.data.AiImageResponse;
 import dev.matheuscruz.infra.ai.data.AiResponse;
 import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.panache.common.Parameters;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.Consumes;
@@ -58,11 +58,21 @@ public class MessageResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response image(@Valid ImageRequest req) {
-        User user = userRepository.find("phoneNumber = :phoneNumber", Parameters.with("phoneNumber", req.from()))
-                .firstResultOptional().orElseThrow(NotFoundException::new);
-        String imageResponse = imageAiService.handleTransactionImage(
+
+        User user = userRepository.findByPhoneNumber(req.from()).orElseThrow(NotFoundException::new);
+        AiImageResponse imageResponse = imageAiService.handleTransactionImage(
                 Image.builder().base64Data(req.base64()).mimeType(req.mimeType()).build(), req.text());
-        return processAiResponse(user, imageResponse);
+
+        if (imageResponse.withError()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(imageResponse).build();
+        }
+
+        QuarkusTransaction.requiringNew().run(() -> {
+            this.recordRepository.persist(Record.create(user.getId(), imageResponse.amount(),
+                    imageResponse.description(), imageResponse.type()));
+        });
+
+        return Response.status(Response.Status.CREATED).entity(imageResponse).build();
     }
 
     private Response handleMessage(User user, String message) {
