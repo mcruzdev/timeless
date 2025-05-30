@@ -115,7 +115,13 @@ The table below explains the purpose of each variable along with suggested examp
 
 1. Go to `whatsapp` directory
 
-2. Set the following environment variables in your `.env` file:
+2. Install packages
+
+```shell
+npm install
+```
+
+3. Set the following environment variables in your `.env` file:
 
 | Variable                      | Description                                                                                       | Suggested Example                                                |
 |-------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
@@ -127,13 +133,13 @@ The table below explains the purpose of each variable along with suggested examp
 | `INCOMING_MESSAGE_QUEUE`     | URL of the SQS queue that receives incoming messages                                              | `https://sqs.us-east-1.amazonaws.com/123456789/incoming-messages.fifo`    |
 | `MESSAGES_PROCESSED_FIFO_URL`| URL of the SQS FIFO queue where processed messages are sent                                       | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo`   |
 
-3. Start the application
+4. Start the application
 
 ```shell
 npm run start
 ```
 
-4. Open the WhatsApp and scan the QR Code generated
+5. Open the WhatsApp and scan the QR Code generated
 
 ### After configuring and running all applications
 
