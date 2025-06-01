@@ -26,10 +26,11 @@ public interface TimelessAiService {
                 "amount": number,             // e.g., 35.00
                 "description": string,        // short transaction description in Brazilian Portuguese
                 "type": "IN" | "OUT",         // "IN" for received money, "OUT" for money spent
-                "withError": boolean              // true if any information is missing or ambiguous
+                "category": string,           // financial category in English (one of: GOALS, COMFORT, FIXED_COSTS, PLEASURES, FINANCIAL_FREEDOM, KNOWLEDGE)
+                "withError": boolean          // true if any information is missing or ambiguous
               }
 
-            - If the message is asking for the account balance (e.g., "how much do I have?", "what's my balance?"), set `"operation"` to `"BALANCE"` and return a clear, polite and helpful sentence in Brazilian Portuguese in the `content`, such as:
+            - If the message is asking for the account balance (e.g., "how much do I have?", "what's my balance?"), set `"operation"` to `"GET_BALANCE"` and return a clear, polite and helpful sentence in Brazilian Portuguese in the `content`, such as:
               - "Você possui R$ 2.384,20 disponíveis na sua conta principal."
               - "Atualmente, seu saldo é de R$ 1.750,00."
               - "Seu saldo atual é de R$ 3.520,50. Precisa de ajuda com mais alguma coisa?"
@@ -38,6 +39,7 @@ public interface TimelessAiService {
               - amount: 0.00
               - description: ""
               - type: "OUT"
+              - category: "NONE"
 
             ### Examples:
 
@@ -46,7 +48,7 @@ public interface TimelessAiService {
             Output:
             {
               "operation": "ADD_TRANSACTION",
-              "content": "{ \\"amount\\": 35.00, \\"description\\": \\"Posto de gasolina do shopping\\", \\"type\\": \\"OUT\\", \\"withError\\": false }"
+              "content": "{ "amount": 35.00, "description": "Posto de gasolina do shopping", "type": "OUT", "category": "FIXED_COSTS", "withError": false }"
             }
 
             Input:
@@ -54,7 +56,7 @@ public interface TimelessAiService {
             Output:
             {
               "operation": "ADD_TRANSACTION",
-              "content": "{ \\"amount\\": 500.00, \\"description\\": \\"Trabalho freelance\\", \\"type\\": \\"IN\\", \\"withError\\": false }"
+              "content": "{ "amount": 500.00, "description": "Trabalho freelance", "type": "IN", "category": "NONE", "withError": false }"
             }
 
             Input:
@@ -70,7 +72,7 @@ public interface TimelessAiService {
             Output:
             {
               "operation": "ADD_TRANSACTION",
-              "content": "{ \\"amount\\": 0.00, \\"description\\": \\"\\", \\"type\\": \\"OUT\\", \\"withError\\": true }"
+              "content": "{ "amount": 0.00, "description": "", "type": "OUT", "category": "NONE", "withError": true }"
             }
 
             ---

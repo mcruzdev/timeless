@@ -91,9 +91,8 @@ public class SQS {
     private void processTransactionMessage(User user, IncomingMessage message, String receiptHandle,
             AiResponse aiResponse) throws IOException {
         AiTransactionResponse transaction = objectMapper.readValue(aiResponse.content(), AiTransactionResponse.class);
-
-        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(
-                Record.create(user.getId(), transaction.amount(), transaction.description(), transaction.type())));
+        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(Record.create(user.getId(),
+                transaction.amount(), transaction.description(), transaction.type(), transaction.category())));
 
         sendProcessedMessage(
                 new TransactionMessageProcessed(AiCommands.ADD_TRANSACTION.commandName(), message.messageId(),

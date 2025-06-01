@@ -17,10 +17,11 @@ public interface TimelessImageAiService {
             3. Return a JSON object with the following structure:
 
             {
-              "amount": number,          // Total transaction value (e.g., 99.75)
-              "description": string,     // Brief description of the transaction (e.g., product or service)
-              "type": "IN" | "OUT",       // "IN" if money was received, "OUT" if money was spent
-              "withError": boolean            // true if the data is missing or ambiguous
+              "amount": number,             // Total transaction value (e.g., 99.75)
+              "description": string,        // Brief description of the transaction (e.g., product or service)
+              "type": "IN" | "OUT",         // "IN" if money was received, "OUT" if money was spent
+              "category": string,           // Financial category in English (one of: GOALS, COMFORT, FIXED_COSTS, PLEASURES, FINANCIAL_FREEDOM, KNOWLEDGE)
+              "withError": boolean          // true if the data is missing or ambiguous
             }
 
             Rules:
@@ -30,12 +31,20 @@ public interface TimelessImageAiService {
             - "type" should be:
               - "OUT" for purchases, payments, or expenses.
               - "IN" for received money, refunds, or deposits.
+            - "category" should be one of the following, based on the transaction:
+              - "GOALS"
+              - "COMFORT"
+              - "FIXED_COSTS"
+              - "PLEASURES"
+              - "FINANCIAL_FREEDOM"
+              - "KNOWLEDGE"
             - If the content contains anything between triple dashes (`---`), **always** use that as the final `description`, regardless of other content.
 
             If any value cannot be confidently extracted:
             - amount: 0.00
             - description: ""
             - type: "OUT"
+            - category: "NONE"
             - withError: true
 
             Important:

@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "records")
@@ -26,33 +27,38 @@ public class Record {
     @Enumerated(EnumType.STRING)
     private OutcomeType outcomeType;
     private Instant createdAt;
+    @Enumerated(EnumType.STRING)
+    private Categories category;
 
     protected Record() {
     }
 
-    private Record(String userId, BigDecimal amount, String description, RecordType recordType,
-            OutcomeType outcomeType) {
+    private Record(String userId, BigDecimal amount, String description, RecordType recordType, OutcomeType outcomeType,
+            Categories category) {
         this.userId = userId;
         this.amount = amount;
         this.description = description;
         this.recordType = recordType;
         this.outcomeType = outcomeType;
         this.createdAt = Instant.now();
+        this.category = Optional.ofNullable(category).orElse(Categories.NONE);
     }
 
-    public static Record create(String userId, BigDecimal amount, String description, RecordType type) {
+    public static Record create(String userId, BigDecimal amount, String description, RecordType type,
+            Categories category) {
         return new Record(userId, amount, description, type,
-                type.equals(RecordType.IN) ? OutcomeType.NONE : OutcomeType.GENERAL);
+                type.equals(RecordType.IN) ? OutcomeType.NONE : OutcomeType.GENERAL, category);
     }
 
     public static Record createIncome(String userId, BigDecimal amount, String description) {
-        return new Record(userId, amount, description, RecordType.IN, OutcomeType.NONE);
+        return new Record(userId, amount, description, RecordType.IN, OutcomeType.NONE, Categories.NONE);
     }
 
-    public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type) {
+    public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type,
+            Categories category) {
         return new Record(Objects.requireNonNull(userId), Objects.requireNonNull(amount),
                 Objects.requireNonNull(description), Objects.requireNonNull(RecordType.OUT),
-                Objects.requireNonNullElse(type, OutcomeType.GENERAL));
+                Objects.requireNonNullElse(type, OutcomeType.GENERAL), category);
     }
 
     public Long getId() {
@@ -81,5 +87,9 @@ public class Record {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Categories getCategory() {
+        return Optional.ofNullable(category).orElse(Categories.NONE);
     }
 }
