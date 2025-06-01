@@ -120,7 +120,8 @@ public class MessageResource {
 
     private Record generateProperRecord(AiTransactionResponse transaction, String userId) {
         return transaction.type().equals(RecordType.OUT)
-                ? Record.createOutcome(userId, transaction.amount(), transaction.description(), OutcomeType.NONE, transaction.category())
+                ? Record.createOutcome(userId, transaction.amount(), transaction.description(), OutcomeType.NONE,
+                        transaction.category())
                 : Record.createIncome(userId, transaction.amount(), transaction.description());
     }
 

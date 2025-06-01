@@ -33,8 +33,8 @@ public class Record {
     protected Record() {
     }
 
-    private Record(String userId, BigDecimal amount, String description, RecordType recordType,
-            OutcomeType outcomeType, Categories category) {
+    private Record(String userId, BigDecimal amount, String description, RecordType recordType, OutcomeType outcomeType,
+            Categories category) {
         this.userId = userId;
         this.amount = amount;
         this.description = description;
@@ -44,7 +44,8 @@ public class Record {
         this.category = Optional.ofNullable(category).orElse(Categories.NONE);
     }
 
-    public static Record create(String userId, BigDecimal amount, String description, RecordType type, Categories category) {
+    public static Record create(String userId, BigDecimal amount, String description, RecordType type,
+            Categories category) {
         return new Record(userId, amount, description, type,
                 type.equals(RecordType.IN) ? OutcomeType.NONE : OutcomeType.GENERAL, category);
     }
@@ -53,7 +54,8 @@ public class Record {
         return new Record(userId, amount, description, RecordType.IN, OutcomeType.NONE, Categories.NONE);
     }
 
-    public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type, Categories category) {
+    public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type,
+            Categories category) {
         return new Record(Objects.requireNonNull(userId), Objects.requireNonNull(amount),
                 Objects.requireNonNull(description), Objects.requireNonNull(RecordType.OUT),
                 Objects.requireNonNullElse(type, OutcomeType.GENERAL), category);

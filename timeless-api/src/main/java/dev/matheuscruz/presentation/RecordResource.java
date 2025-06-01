@@ -59,7 +59,8 @@ public class RecordResource {
         QuarkusTransaction.begin();
         Record record;
         if (req.recordType().equals(RecordType.OUT)) {
-            record = Record.createOutcome(user.getId(), req.amount(), req.description(), OutcomeType.GENERAL, req.category());
+            record = Record.createOutcome(user.getId(), req.amount(), req.description(), OutcomeType.GENERAL,
+                    req.category());
             this.recordRepository.persist(record);
         } else {
             record = Record.createIncome(user.getId(), req.amount(), req.description());
@@ -101,11 +102,12 @@ public class RecordResource {
     public record PageRecord(List<RecordItem> items, Long totalRecords, BigDecimal totalExpenses, BigDecimal totalIn) {
     }
 
-    public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt, String category) {
+    public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt,
+            String category) {
     }
 
     public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
-                                      @NotNull RecordType recordType, @NotBlank String from, @NotNull Categories category) {
+            @NotNull RecordType recordType, @NotBlank String from, @NotNull Categories category) {
     }
 
 }
