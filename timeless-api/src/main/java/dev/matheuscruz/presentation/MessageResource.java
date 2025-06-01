@@ -69,7 +69,7 @@ public class MessageResource {
 
         QuarkusTransaction.requiringNew().run(() -> {
             this.recordRepository.persist(Record.create(user.getId(), imageResponse.amount(),
-                    imageResponse.description(), imageResponse.type()));
+                    imageResponse.description(), imageResponse.type(), imageResponse.category()));
         });
 
         return Response.status(Response.Status.CREATED).entity(imageResponse).build();
@@ -120,7 +120,7 @@ public class MessageResource {
 
     private Record generateProperRecord(AiTransactionResponse transaction, String userId) {
         return transaction.type().equals(RecordType.OUT)
-                ? Record.createOutcome(userId, transaction.amount(), transaction.description(), OutcomeType.NONE)
+                ? Record.createOutcome(userId, transaction.amount(), transaction.description(), OutcomeType.NONE, transaction.category())
                 : Record.createIncome(userId, transaction.amount(), transaction.description());
     }
 

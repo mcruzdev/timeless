@@ -1,9 +1,7 @@
 package dev.matheuscruz.presentation;
 
-import dev.matheuscruz.domain.OutcomeType;
+import dev.matheuscruz.domain.*;
 import dev.matheuscruz.domain.Record;
-import dev.matheuscruz.domain.RecordType;
-import dev.matheuscruz.domain.User;
 import dev.matheuscruz.infra.persistence.RecordRepository;
 import dev.matheuscruz.infra.persistence.UserRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -61,7 +59,7 @@ public class RecordResource {
         QuarkusTransaction.begin();
         Record record;
         if (req.recordType().equals(RecordType.OUT)) {
-            record = Record.createOutcome(user.getId(), req.amount(), req.description(), OutcomeType.GENERAL);
+            record = Record.createOutcome(user.getId(), req.amount(), req.description(), OutcomeType.GENERAL, req.category());
             this.recordRepository.persist(record);
         } else {
             record = Record.createIncome(user.getId(), req.amount(), req.description());
@@ -84,7 +82,7 @@ public class RecordResource {
             String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                     .format(formatter);
             return new RecordItem(record.getId(), record.getAmount(), record.getDescription(),
-                    record.getRecordType().name(), format);
+                    record.getRecordType().name(), format, record.getCategory().name());
         }).toList();
 
         List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now",
@@ -103,11 +101,11 @@ public class RecordResource {
     public record PageRecord(List<RecordItem> items, Long totalRecords, BigDecimal totalExpenses, BigDecimal totalIn) {
     }
 
-    public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt) {
+    public record RecordItem(Long id, BigDecimal amount, String description, String recordType, String createdAt, String category) {
     }
 
     public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
-            @NotNull RecordType recordType, @NotBlank String from) {
+                                      @NotNull RecordType recordType, @NotBlank String from, @NotNull Categories category) {
     }
 
 }
