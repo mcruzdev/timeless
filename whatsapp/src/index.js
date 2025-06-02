@@ -5,7 +5,6 @@ const crypto = require("crypto")
 const OpenAI = require("openai")
 const fs = require("fs")
 const { tmpdir } = require("os")
-const { createClient } = require("redis")
 const path = require("path")
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
 const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs")
@@ -17,7 +16,6 @@ const FLAGS = {
     sendMediaToS3: process.env.SEND_MEDIA_TO_S3 || false,
 }
 const AWS_REGION = "sa-east-1"
-const USERS_KEY = "timeless-api:users"
 const ALLOWED_MEDIAS = ["image/jpeg", "audio/ogg; codecs=opus"]
 const CURRENCY_FORMATTER = Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -55,17 +53,8 @@ const mimetypeFileMap = {
     },
 }
 
-let redis
-
-async function initializeRedis() {
-    const client = createClient({ url: "redis://localhost:6379" })
-    await client.connect()
-    redis = client
-    const allowedUsers = process.env.ALLOW_USERS.split(",").filter(Boolean)
-    await redis.set(USERS_KEY, JSON.stringify(allowedUsers))
-    console.log(`${USERS_KEY} was set successfully`)
-}
-initializeRedis()
+const getAllowedUsers = () =>
+    process.env.ALLOWED_USERS.split(",").filter(Boolean)
 
 const client = new Client({
     clientId: "timeless-bot",
@@ -105,18 +94,12 @@ client.on("message", async (message) => {
     }
 })
 
-async function getAllowedUsers() {
-    const data = await redis.get(USERS_KEY)
-    return JSON.parse(data || "[]")
-}
-
 function generateSimpleAudioName() {
     return `${crypto.randomUUID().toLowerCase()}.mp3`
 }
 
 async function handleTextMessage(message, sender) {
     const messageId = message.id.id
-    const chat = await message.getChat()
 
     await sqsClient.send(
         new SendMessageCommand({
@@ -159,7 +142,7 @@ async function handleImageMessage(message, media) {
             base64: media.data,
             mimeType: media.mimetype,
         })
-            
+
         await sendMovementResult(chat, {
             ...data,
         })
@@ -192,7 +175,7 @@ async function handleAudioMessage(message, media) {
     }
 
     if (!transcription) {
-        await message.reply("Hmmmm... Não foi possível transcrever o seu áudio")
+        await message.reply("Não foi possível transcrever o seu áudio")
         return
     }
 

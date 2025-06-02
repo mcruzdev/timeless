@@ -128,7 +128,7 @@ npm install
 | `AWS_ACCESS_KEY_ID`                  | Your AWS Access Key                                                                               | `AKIAxxxxxxxxxxxxxxxxxx`                                         |
 | `AWS_SECRET_ACCESS_KEY`                  | Your AWS Secret Key                                                                               | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`                       |
 | `ASSETS_BUCKET`              | The name of the bucket where audio and images will be stored (created via Terraform)                      | `my-assets-bucket`                                                 |
-| `ALLOW_USERS`                | Comma-separated list of phone numbers allowed to interact with the bot             | `5511999999999,5511888888888`                                  |
+| `ALLOWED_USERS`                | Comma-separated list of phone numbers allowed to interact with the bot             | `5511999999999,5511888888888`                                  |
 | `OPENAI_API_KEY`             | Your OpenAI API Key used to access GPT and Whisper APIs                                           | `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`            |
 | `INCOMING_MESSAGE_QUEUE`     | URL of the SQS queue that receives incoming messages                                              | `https://sqs.us-east-1.amazonaws.com/123456789/incoming-messages.fifo`    |
 | `MESSAGES_PROCESSED_FIFO_URL`| URL of the SQS FIFO queue where processed messages are sent                                       | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo`   |
@@ -149,7 +149,7 @@ npm run start
 2. Fill out the registration form with your details and submit it.
 3. Log in to your account at [http://localhost:8080](http://localhost:8080).
 4. Add your phone number on the [User Configs page](http://localhost:8080/home/user-configs).  
-   ⚠️ Make sure the phone number matches one of the values defined in the `ALLOW_USERS` environment variable.
+   ⚠️ Make sure the phone number matches one of the values defined in the `ALLOWED_USERS` environment variable.
 5. Send a WhatsApp message to the scanned number with the following phrase:  
    **`Comprei um café 80,00 reais`**
 6. Refresh the page and see your balance go negative — good luck managing your expenses!
