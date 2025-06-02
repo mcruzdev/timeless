@@ -11,6 +11,7 @@ const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs")
 const { Consumer } = require("sqs-consumer")
 
 const timelessApiClient = require("./axios")
+const WAWebJS = require("whatsapp-web.js")
 
 const FLAGS = {
     sendMediaToS3: process.env.SEND_MEDIA_TO_S3 || false,
@@ -51,6 +52,11 @@ const mimetypeFileMap = {
         name: "image.jpg",
         kind: "IMAGE",
     },
+}
+
+const messages = {
+    sorryNotRegistered:
+        "Desculpe-me! Não foi possível cadastrar a sua movimentação",
 }
 
 const getAllowedUsers = () =>
@@ -143,18 +149,22 @@ async function handleImageMessage(message, media) {
             mimeType: media.mimetype,
         })
 
-        await sendMovementResult(chat, {
+        await sendRecordResult(chat, {
             ...data,
         })
     } catch (err) {
         console.error(err.message)
-        await chat.sendMessage(
-            "Desculpe-me! Não foi possível cadastrar a sua movimentação"
-        )
+        await chat.sendMessage(messages.sorryNotRegistered)
         await message.react("❌")
     }
 }
 
+/**
+ *
+ * @param {WAWebJS.Message} message
+ * @param {*} media
+ * @returns
+ */
 async function handleAudioMessage(message, media) {
     const buffer = Buffer.from(media.data, "base64")
     const contact = await message.getContact()
@@ -180,14 +190,23 @@ async function handleAudioMessage(message, media) {
     }
 
     try {
-        await timelessApiClient.post("/api/messages", {
+        const { data } = await timelessApiClient.post("/api/messages", {
             from: contact.id.user,
             message: transcription.text,
         })
-        await message.react("✅")
+        const chat = await message.getChat()
+
+        const content = JSON.parse(data.content)
+
+        await sendRecordResult(chat, {
+            amount: content.amount,
+            description: content.description,
+            type: content.type,
+            withError: content.withError,
+        })
     } catch (err) {
         console.error(err)
-        await message.react("❌")
+        await chat.sendMessage(messages.sorryNotRegistered)
     }
 }
 
@@ -224,7 +243,7 @@ const consumer = Consumer.create({
             return sqsMessage
         } catch (error) {
             console.error("Failed to process SQS message:", error)
-            return {} // Don't delete message
+            return {}
         }
     },
 })
@@ -241,7 +260,7 @@ async function handleMessageByCommandName(chat, data) {
             break
 
         case "ADD_TRANSACTION":
-            await sendMovementResult(chat, {
+            await sendRecordResult(chat, {
                 withError: data.withError,
                 amount: data.content.amount,
                 description: data.content.description,
@@ -254,14 +273,21 @@ async function handleMessageByCommandName(chat, data) {
     }
 }
 
-async function sendMovementResult(
+/**
+ *
+ * @param {WAWebJS.Chat} chat
+ * @param {Object} metadata
+ * @param {String} metadata.description
+ * @param {Number} metadata.amount
+ * @param {String} metadata.type
+ * @param {Boolean} parmetadataam1.withError
+ */
+async function sendRecordResult(
     chat,
     { description, amount, type, withError }
 ) {
     if (withError) {
-        await chat.sendMessage(
-            "Desculpe-me! Não foi possível cadastrar a sua movimentação"
-        )
+        await chat.sendMessage(messages.sorryNotRegistered)
     } else {
         await chat.sendMessage(
             `Sua movimentação foi cadastrada com sucesso ✅
