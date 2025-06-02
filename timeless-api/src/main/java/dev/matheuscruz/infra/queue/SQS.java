@@ -17,6 +17,8 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -91,13 +93,16 @@ public class SQS {
     private void processTransactionMessage(User user, IncomingMessage message, String receiptHandle,
             AiResponse aiResponse) throws IOException {
         AiTransactionResponse transaction = objectMapper.readValue(aiResponse.content(), AiTransactionResponse.class);
-        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(Record.create(user.getId(),
-                transaction.amount(), transaction.description(), transaction.type(), transaction.category())));
 
         sendProcessedMessage(
                 new TransactionMessageProcessed(AiCommands.ADD_TRANSACTION.commandName(), message.messageId(),
                         MessageStatus.PROCESSED, user.getPhoneNumber(), transaction.withError(), transaction));
+
+        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(Record.create(user.getId(),
+                transaction.amount(), transaction.description(), transaction.type(), transaction.category())));
+
         deleteMessageUsing(receiptHandle);
+
         logger.infof("Message %s processed as ADD_TRANSACTION", message.messageId());
     }
 
@@ -112,7 +117,10 @@ public class SQS {
 
     private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
         String messageBody = objectMapper.writeValueAsString(processedMessage);
-        sqs.sendMessage(req -> req.messageBody(messageBody).queueUrl(processedMessagesUrl));
+        sqs.sendMessage(
+                req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
+                        .messageDeduplicationId(UUID.randomUUID().toString())
+                        .queueUrl(processedMessagesUrl));
     }
 
     private AiResponse parseAiResponse(String response) {

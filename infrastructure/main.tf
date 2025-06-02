@@ -37,7 +37,8 @@ resource "aws_iam_policy" "bucket_write_policy" {
         Action = [
           "sqs:ReceiveMessage",
           "sqs:GetQueueAttributes",
-          "sqs:DeleteMessage"
+          "sqs:DeleteMessage",
+          "sqs:SendMessage",
         ],
         Resource = "${aws_sqs_queue.message_processed.arn}"
       }

@@ -87,7 +87,7 @@ client.on("qr", (qr) => {
 })
 
 client.on("ready", () => {
-    console.log("client connected")
+    console.log("WhatsApp Bot Running 🥳")
     consumer.start()
 })
 
@@ -134,6 +134,8 @@ async function handleTextMessage(message, sender) {
     await sqsClient.send(
         new SendMessageCommand({
             QueueUrl: process.env.INCOMING_MESSAGE_FIFO_URL,
+            MessageGroupId: "IncomingMessagesFromUser",
+            MessageDeduplicationId: crypto.randomUUID().toString(),
             MessageBody: JSON.stringify({
                 sender,
                 kind: "TEXT",

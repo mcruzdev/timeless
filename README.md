@@ -26,6 +26,10 @@ This application monitors WhatsApp messages for signs of purchases (such as rece
 
 2. The system identifies the transaction, extracts the data, and saves it into your monthly budget.
 
+## Running with Terraform and AWS
+
+If you want to use Terraform and AWS see [this tutorial](RUNNING_TERRAFORM_AWS.md).
+
 ## Running locally with localstack
 
 ### Execute the infrastructure

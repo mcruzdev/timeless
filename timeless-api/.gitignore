@@ -37,7 +37,7 @@ nb-configuration.xml
 *.rej
 
 # Local environment
-.env.aws
+.env
 
 # Plugin directory
 /.quarkus/cli/plugins/
