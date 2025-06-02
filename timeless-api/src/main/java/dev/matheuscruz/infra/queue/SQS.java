@@ -18,7 +18,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -117,10 +116,8 @@ public class SQS {
 
     private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
         String messageBody = objectMapper.writeValueAsString(processedMessage);
-        sqs.sendMessage(
-                req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
-                        .messageDeduplicationId(UUID.randomUUID().toString())
-                        .queueUrl(processedMessagesUrl));
+        sqs.sendMessage(req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
+                .messageDeduplicationId(UUID.randomUUID().toString()).queueUrl(processedMessagesUrl));
     }
 
     private AiResponse parseAiResponse(String response) {
