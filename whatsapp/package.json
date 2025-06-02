@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
+        "start:local": "ENV=local node src/index.js",
         "start": "node src/index.js",
         "prettier:write": "npx prettier . --write",
         "prettier:check": "npx prettier . --check"

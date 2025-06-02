@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:4.2.0
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,s3
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack/data
+    volumes:
+      - ./localstack-data:/var/lib/localstack/data
+      - ./scripts:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=quarkus
+      - POSTGRES_PASSWORD=quarkus
+      - POSTGRES_DB=quarkus
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

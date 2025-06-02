@@ -1,11 +1,18 @@
-require("dotenv").config()
+const path = require("path")
+
+require("dotenv").config({
+    path: path.resolve(
+        process.cwd(),
+        process.env.ENV === "local" ? ".env.local" : ".env"
+    ),
+})
+
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
 const crypto = require("crypto")
 const OpenAI = require("openai")
 const fs = require("fs")
 const { tmpdir } = require("os")
-const path = require("path")
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
 const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs")
 const { Consumer } = require("sqs-consumer")
@@ -16,7 +23,7 @@ const WAWebJS = require("whatsapp-web.js")
 const FLAGS = {
     sendMediaToS3: process.env.SEND_MEDIA_TO_S3 || false,
 }
-const AWS_REGION = "sa-east-1"
+const AWS_REGION = process.env.AWS_REGION
 const ALLOWED_MEDIAS = ["image/jpeg", "audio/ogg; codecs=opus"]
 const CURRENCY_FORMATTER = Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -34,9 +41,13 @@ const s3Client = new S3Client({
     credentials: awsCredentials,
 })
 
+const additionalConfigs =
+    process.env.ENV === "local" ? { endpoint: "http://localhost:4566" } : {}
+
 const sqsClient = new SQSClient({
     region: AWS_REGION,
     credentials: awsCredentials,
+    ...additionalConfigs,
 })
 
 const openai = new OpenAI({
@@ -70,7 +81,10 @@ const client = new Client({
     },
 })
 
-client.on("qr", (qr) => qrcode.generate(qr, { small: true }))
+client.on("qr", (qr) => {
+    console.log("Scan the following QRCode using WhatsApp")
+    qrcode.generate(qr, { small: true })
+})
 
 client.on("ready", () => {
     console.log("client connected")
@@ -82,7 +96,12 @@ client.on("message", async (message) => {
 
     const users = await getAllowedUsers()
     const sender = (await message.getContact()).id.user
-    if (!users.includes(sender)) return
+    if (!users.includes(sender)) {
+        console.log(
+            "This number is not authorized to communicate with the bot.",
+            sender
+        )
+    }
 
     message.reply("Estamos processando sua mensagem")
     const chat = await message.getChat()
@@ -104,13 +123,17 @@ function generateSimpleAudioName() {
     return `${crypto.randomUUID().toLowerCase()}.mp3`
 }
 
+/**
+ *
+ * @param {WAWebJS.Message} message
+ * @param {String} sender
+ */
 async function handleTextMessage(message, sender) {
     const messageId = message.id.id
 
     await sqsClient.send(
         new SendMessageCommand({
-            QueueUrl: process.env.INCOMING_MESSAGE_QUEUE,
-            MessageGroupId: "IncomingMessagesFromUser",
+            QueueUrl: process.env.INCOMING_MESSAGE_FIFO_URL,
             MessageBody: JSON.stringify({
                 sender,
                 kind: "TEXT",
@@ -122,6 +145,11 @@ async function handleTextMessage(message, sender) {
     )
 }
 
+/**
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
+ * @param {String} sender
+ */
 async function handleMediaMessage(message, media, sender) {
     const { mimetype } = media
     if (!mimetypeFileMap[mimetype]) return
@@ -137,6 +165,11 @@ async function handleMediaMessage(message, media, sender) {
     }
 }
 
+/**
+ *
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
+ */
 async function handleImageMessage(message, media) {
     const contact = await message.getContact()
     const chat = await message.getChat()
@@ -155,15 +188,13 @@ async function handleImageMessage(message, media) {
     } catch (err) {
         console.error(err.message)
         await chat.sendMessage(messages.sorryNotRegistered)
-        await message.react("❌")
     }
 }
 
 /**
  *
  * @param {WAWebJS.Message} message
- * @param {*} media
- * @returns
+ * @param {WAWebJS.MessageMedia} media
  */
 async function handleAudioMessage(message, media) {
     const buffer = Buffer.from(media.data, "base64")
@@ -210,6 +241,11 @@ async function handleAudioMessage(message, media) {
     }
 }
 
+/**
+ *
+ * @param {WAWebJS.Message} message
+ * @param {WAWebJS.MessageMedia} media
+ */
 async function uploadMediaToS3(message, media) {
     const file = mimetypeFileMap[media.mimetype]
     const key = `messages/${message.from}/${message.id.id}/${file.name}`
@@ -248,11 +284,25 @@ const consumer = Consumer.create({
     },
 })
 
+/**
+ * @param {String} userId
+ */
 async function findChatByUser(userId) {
     const chats = await client.getChats()
     return chats.find((chat) => chat.id.user === userId)
 }
 
+/**
+ *
+ * @param {WAWebJS.Chat} chat
+ * @param {Object} data
+ * @param {String} data.kind
+ * @param {Boolean} data.withError
+ * @param {Object} data.content
+ * @param {Number} data.content.amount
+ * @param {String} data.content.description
+ * @param {String} data.content.type
+ */
 async function handleMessageByCommandName(chat, data) {
     switch (data.kind) {
         case "GET_BALANCE":

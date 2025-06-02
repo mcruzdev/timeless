@@ -112,8 +112,7 @@ public class SQS {
 
     private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
         String messageBody = objectMapper.writeValueAsString(processedMessage);
-        sqs.sendMessage(
-                req -> req.messageBody(messageBody).queueUrl(processedMessagesUrl).messageGroupId("ProcessedMessages"));
+        sqs.sendMessage(req -> req.messageBody(messageBody).queueUrl(processedMessagesUrl));
     }
 
     private AiResponse parseAiResponse(String response) {

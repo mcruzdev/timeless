@@ -16,7 +16,6 @@
         <quarkus.platform.version>3.22.3</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
-        <quarkus-amazon-services.version>3.3.1</quarkus-amazon-services.version>
         <quarkus-quinoa.version>2.5.4</quarkus-quinoa.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <quarkus-langchain4j-openai.version>1.0.0.CR1</quarkus-langchain4j-openai.version>
@@ -32,9 +31,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>io.quarkiverse.amazonservices</groupId>
+                <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-amazon-services-bom</artifactId>
-                <version>${quarkus-amazon-services.version}</version>
+                <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
