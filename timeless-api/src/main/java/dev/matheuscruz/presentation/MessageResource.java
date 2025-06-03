@@ -3,18 +3,15 @@ package dev.matheuscruz.presentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.image.Image;
-import dev.matheuscruz.domain.OutcomeType;
 import dev.matheuscruz.domain.Record;
-import dev.matheuscruz.domain.RecordType;
+import dev.matheuscruz.domain.RecordRepository;
 import dev.matheuscruz.domain.User;
-import dev.matheuscruz.infra.ai.TimelessAiService;
-import dev.matheuscruz.infra.ai.TimelessImageAiService;
-import dev.matheuscruz.infra.ai.data.AiCommands;
-import dev.matheuscruz.infra.ai.data.AiImageResponse;
-import dev.matheuscruz.infra.ai.data.AiResponse;
-import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
-import dev.matheuscruz.infra.persistence.RecordRepository;
-import dev.matheuscruz.infra.persistence.UserRepository;
+import dev.matheuscruz.domain.UserRepository;
+import dev.matheuscruz.infra.ai.ImageAiService;
+import dev.matheuscruz.infra.ai.TextAiService;
+import dev.matheuscruz.infra.ai.data.AiOperations;
+import dev.matheuscruz.infra.ai.data.ContextMessage;
+import dev.matheuscruz.infra.ai.data.RecordInfo;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.validation.Valid;
@@ -31,13 +28,13 @@ import jakarta.ws.rs.core.Response;
 public class MessageResource {
 
     private final UserRepository userRepository;
-    private final TimelessAiService aiService;
-    private final TimelessImageAiService imageAiService;
+    private final TextAiService aiService;
+    private final ImageAiService imageAiService;
     private final RecordRepository recordRepository;
     private final ObjectMapper objectMapper;
 
-    public MessageResource(TimelessAiService aiService, TimelessImageAiService imageAiService,
-            RecordRepository recordRepository, ObjectMapper mapper, UserRepository userRepository) {
+    public MessageResource(TextAiService aiService, ImageAiService imageAiService, RecordRepository recordRepository,
+            ObjectMapper mapper, UserRepository userRepository) {
         this.aiService = aiService;
         this.imageAiService = imageAiService;
         this.recordRepository = recordRepository;
@@ -60,7 +57,7 @@ public class MessageResource {
     public Response image(@Valid ImageRequest req) {
 
         User user = userRepository.findByPhoneNumber(req.from()).orElseThrow(NotFoundException::new);
-        AiImageResponse imageResponse = imageAiService.handleTransactionImage(
+        RecordInfo imageResponse = imageAiService.handleTransactionImage(
                 Image.builder().base64Data(req.base64()).mimeType(req.mimeType()).build(), req.text());
 
         if (imageResponse.withError()) {
@@ -68,8 +65,12 @@ public class MessageResource {
         }
 
         QuarkusTransaction.requiringNew().run(() -> {
-            this.recordRepository.persist(Record.create(user.getId(), imageResponse.amount(),
-                    imageResponse.description(), imageResponse.type(), imageResponse.category()));
+
+            Record record = new Record.Builder().userId(user.getId()).amount(imageResponse.amount())
+                    .description(imageResponse.description()).transaction(imageResponse.type())
+                    .category(imageResponse.category()).build();
+
+            this.recordRepository.persist(record);
         });
 
         return Response.status(Response.Status.CREATED).entity(imageResponse).build();
@@ -82,25 +83,25 @@ public class MessageResource {
 
     private Response processAiResponse(User user, String response) {
 
-        AiResponse aiResponse;
+        ContextMessage contextMessage;
         try {
-            aiResponse = objectMapper.readValue(response, AiResponse.class);
+            contextMessage = objectMapper.readValue(response, ContextMessage.class);
         } catch (JsonProcessingException e) {
             Log.error("Failed to parse AI response", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        if (AiCommands.ADD_TRANSACTION.equals(aiResponse.operation())) {
-            return handleTransaction(aiResponse, user);
+        if (AiOperations.ADD_TRANSACTION.equals(contextMessage.operation())) {
+            return handleTransaction(contextMessage, user);
         }
 
-        return Response.status(Response.Status.BAD_REQUEST).entity(aiResponse).build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(contextMessage).build();
     }
 
-    private Response handleTransaction(AiResponse aiResponse, User user) {
-        AiTransactionResponse transaction;
+    private Response handleTransaction(ContextMessage contextMessage, User user) {
+        RecordInfo transaction;
         try {
-            transaction = objectMapper.readValue(aiResponse.content(), AiTransactionResponse.class);
+            transaction = objectMapper.readValue(contextMessage.content(), RecordInfo.class);
         } catch (JsonProcessingException e) {
             Log.error("Failed to parse transaction content", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -111,18 +112,15 @@ public class MessageResource {
         }
 
         QuarkusTransaction.requiringNew().run(() -> {
-            Record record = generateProperRecord(transaction, user.getId());
+
+            Record record = new Record.Builder().userId(user.getId()).amount(transaction.amount())
+                    .description(transaction.description()).category(transaction.category())
+                    .transaction(transaction.type()).build();
+
             recordRepository.persist(record);
         });
 
-        return Response.ok(aiResponse).build();
-    }
-
-    private Record generateProperRecord(AiTransactionResponse transaction, String userId) {
-        return transaction.type().equals(RecordType.OUT)
-                ? Record.createOutcome(userId, transaction.amount(), transaction.description(), OutcomeType.NONE,
-                        transaction.category())
-                : Record.createIncome(userId, transaction.amount(), transaction.description());
+        return Response.ok(contextMessage).build();
     }
 
     public record MessageRequest(@NotBlank String from, @NotBlank String message) {

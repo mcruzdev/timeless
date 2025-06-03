@@ -1,5 +1,5 @@
 package dev.matheuscruz.domain;
 
-public enum RecordType {
+public enum Transactions {
     OUT, IN
 }

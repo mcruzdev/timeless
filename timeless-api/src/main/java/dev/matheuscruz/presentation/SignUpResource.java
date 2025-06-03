@@ -1,7 +1,7 @@
 package dev.matheuscruz.presentation;
 
 import dev.matheuscruz.domain.User;
-import dev.matheuscruz.infra.persistence.UserRepository;
+import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.infra.security.AESAdapter;
 import dev.matheuscruz.infra.security.BCryptAdapter;
 import dev.matheuscruz.presentation.data.Problem;
@@ -14,7 +14,6 @@ import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
-import java.net.URI;
 
 @Path("/api/sign-up")
 public class SignUpResource {
@@ -43,10 +42,14 @@ public class SignUpResource {
             this.userRepository.persist(user);
         });
 
-        return Response.created(URI.create("/api/sign-in")).build();
+        return Response.status(Response.Status.CREATED).entity(new SignUpResponse(user.getId(), user.getEmail()))
+                .build();
     }
 
     public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8) String password,
             @NotBlank String firstName, @NotBlank String lastName) {
+    }
+
+    public record SignUpResponse(String id, String email) {
     }
 }

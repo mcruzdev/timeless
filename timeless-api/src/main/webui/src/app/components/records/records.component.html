@@ -55,7 +55,7 @@
       <td class="text-sm">{{ record.description }}</td>
       <td class="text-sm">
         <p-tag rounded="true" value="{{ record.tag }}" [icon]="record.icon"
-               [severity]="record.recordType == 'IN' ? 'success' : 'danger'"></p-tag>
+               [severity]="record.transaction == 'IN' ? 'success' : 'danger'"></p-tag>
       </td>
       <td class="text-sm">{{ record.createdAt }}</td>
       <td class="text-sm">

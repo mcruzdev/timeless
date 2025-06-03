@@ -28,9 +28,15 @@ This application monitors WhatsApp messages for signs of purchases (such as rece
 
 ## Running with Terraform and AWS
 
+> [!WARNING]
+> Actually, you will need two phones and a OpenAI token. Feel free to change the code to support only one number and a local LLM.
+
 If you want to use Terraform and AWS see [this tutorial](RUNNING_TERRAFORM_AWS.md).
 
 ## Running locally with localstack
+
+> [!WARNING]
+> Actually, you will need two phones and a OpenAI token. Feel free to change the code to support only one number and a local LLM.
 
 ### Execute the infrastructure
 

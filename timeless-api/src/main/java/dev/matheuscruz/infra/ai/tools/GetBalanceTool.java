@@ -1,9 +1,9 @@
 package dev.matheuscruz.infra.ai.tools;
 
 import dev.langchain4j.agent.tool.Tool;
-import dev.matheuscruz.domain.RecordType;
-import dev.matheuscruz.infra.persistence.RecordRepository;
-import dev.matheuscruz.infra.persistence.projection.AmountTypeProjection;
+import dev.matheuscruz.domain.AmountAndTypeOnly;
+import dev.matheuscruz.domain.RecordRepository;
+import dev.matheuscruz.domain.Transactions;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,9 +19,9 @@ public class GetBalanceTool {
 
     @Tool(value = "get account balance")
     public BigDecimal getBalance() {
-        List<AmountTypeProjection> list = this.recordRepository.getRecordsWithAmountAndTypeOnly();
+        List<AmountAndTypeOnly> list = this.recordRepository.getRecordsWithAmountAndTypeOnly();
         return list.stream()
-                .map(record -> record.getRecordType().equals(RecordType.OUT)
+                .map(record -> record.getTransaction().equals(Transactions.OUT)
                         ? record.getAmount().multiply(new BigDecimal(-1))
                         : record.getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

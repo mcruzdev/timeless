@@ -5,7 +5,7 @@ import dev.matheuscruz.infra.ai.tools.GetBalanceTool;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
 @RegisterAiService(tools = { GetBalanceTool.class })
-public interface TimelessAiService {
+public interface TextAiService {
 
     @UserMessage("""
             You are a smart financial assistant capable of performing two types of operations based on the user's message:
@@ -31,7 +31,7 @@ public interface TimelessAiService {
               }
 
             - If the message is asking for the account balance (e.g., "how much do I have?", "what's my balance?"), set `"operation"` to `"GET_BALANCE"` and return a clear, polite and helpful sentence in Brazilian Portuguese in the `content`, such as:
-              - "Você possui R$ 2.384,20 disponíveis na sua conta principal."
+              - "Você possui R$ 2.384,20."
               - "Atualmente, seu saldo é de R$ 1.750,00."
               - "Seu saldo atual é de R$ 3.520,50. Precisa de ajuda com mais alguma coisa?"
 

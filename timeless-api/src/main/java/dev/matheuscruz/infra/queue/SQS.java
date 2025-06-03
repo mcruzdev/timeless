@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import dev.matheuscruz.domain.Record;
+import dev.matheuscruz.domain.RecordRepository;
 import dev.matheuscruz.domain.User;
-import dev.matheuscruz.infra.ai.TimelessAiService;
-import dev.matheuscruz.infra.ai.data.AiCommands;
-import dev.matheuscruz.infra.ai.data.AiResponse;
-import dev.matheuscruz.infra.ai.data.AiSimpleMessageResponse;
-import dev.matheuscruz.infra.ai.data.AiTransactionResponse;
-import dev.matheuscruz.infra.persistence.RecordRepository;
-import dev.matheuscruz.infra.persistence.UserRepository;
+import dev.matheuscruz.domain.UserRepository;
+import dev.matheuscruz.infra.ai.TextAiService;
+import dev.matheuscruz.infra.ai.data.AiOperations;
+import dev.matheuscruz.infra.ai.data.ContextMessage;
+import dev.matheuscruz.infra.ai.data.RecordInfo;
+import dev.matheuscruz.infra.ai.data.SimpleMessage;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -29,18 +29,18 @@ public class SQS {
     final String processedMessagesUrl;
     final SqsClient sqs;
     final ObjectMapper objectMapper;
-    final TimelessAiService aiService;
+    final TextAiService aiService;
     final RecordRepository recordRepository;
     final UserRepository userRepository;
     final Logger logger = Logger.getLogger(SQS.class);
 
     private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
 
-    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(AiResponse.class);
+    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(ContextMessage.class);
 
     public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-messages.queue-url") String incomingMessagesUrl,
             @ConfigProperty(name = "whatsapp.messages-processed.queue-url") String messagesProcessedUrl,
-            ObjectMapper objectMapper, TimelessAiService aiService, RecordRepository recordRepository,
+            ObjectMapper objectMapper, TextAiService aiService, RecordRepository recordRepository,
             UserRepository userRepository) {
 
         this.sqs = sqs;
@@ -76,12 +76,13 @@ public class SQS {
 
     private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
         try {
-            AiResponse aiResponse = parseAiResponse(aiService.handleMessage(message.messageBody()));
+            ContextMessage contextMessage = parseAiResponse(aiService.handleMessage(message.messageBody()));
 
-            switch (aiResponse.operation()) {
-                case AiCommands.ADD_TRANSACTION -> processTransactionMessage(user, message, receiptHandle, aiResponse);
-                case AiCommands.GET_BALANCE -> processSimpleMessage(user, message, receiptHandle, aiResponse);
-                default -> logger.warnf("Unknown operation type: %s", aiResponse.operation());
+            switch (contextMessage.operation()) {
+                case AiOperations.ADD_TRANSACTION ->
+                        processTransactionMessage(user, message, receiptHandle, contextMessage);
+                case AiOperations.GET_BALANCE -> processSimpleMessage(user, message, receiptHandle, contextMessage);
+                default -> logger.warnf("Unknown operation type: %s", contextMessage.operation());
             }
 
         } catch (Exception e) {
@@ -90,25 +91,28 @@ public class SQS {
     }
 
     private void processTransactionMessage(User user, IncomingMessage message, String receiptHandle,
-            AiResponse aiResponse) throws IOException {
-        AiTransactionResponse transaction = objectMapper.readValue(aiResponse.content(), AiTransactionResponse.class);
+            ContextMessage contextMessage) throws IOException {
+        RecordInfo transaction = objectMapper.readValue(contextMessage.content(), RecordInfo.class);
 
         sendProcessedMessage(
-                new TransactionMessageProcessed(AiCommands.ADD_TRANSACTION.commandName(), message.messageId(),
+                new TransactionMessageProcessed(AiOperations.ADD_TRANSACTION.commandName(), message.messageId(),
                         MessageStatus.PROCESSED, user.getPhoneNumber(), transaction.withError(), transaction));
 
-        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(Record.create(user.getId(),
-                transaction.amount(), transaction.description(), transaction.type(), transaction.category())));
+        Record record = new Record.Builder().userId(user.getId()).amount(transaction.amount())
+                .description(transaction.description()).transaction(transaction.type()).category(transaction.category())
+                .build();
+
+        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(record));
 
         deleteMessageUsing(receiptHandle);
 
         logger.infof("Message %s processed as ADD_TRANSACTION", message.messageId());
     }
 
-    private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle, AiResponse aiResponse)
-            throws IOException {
-        AiSimpleMessageResponse response = new AiSimpleMessageResponse(aiResponse.content());
-        sendProcessedMessage(new SimpleMessageProcessed(AiCommands.GET_BALANCE.commandName(), message.messageId(),
+    private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle,
+            ContextMessage contextMessage) throws IOException {
+        SimpleMessage response = new SimpleMessage(contextMessage.content());
+        sendProcessedMessage(new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(), message.messageId(),
                 MessageStatus.PROCESSED, user.getPhoneNumber(), response));
         deleteMessageUsing(receiptHandle);
         logger.infof("Message %s processed as GET_BALANCE", message.messageId());
@@ -120,7 +124,7 @@ public class SQS {
                 .messageDeduplicationId(UUID.randomUUID().toString()).queueUrl(processedMessagesUrl));
     }
 
-    private AiResponse parseAiResponse(String response) {
+    private ContextMessage parseAiResponse(String response) {
         try {
             return AI_RESPONSE_READER.readValue(response);
         } catch (IOException e) {
@@ -141,11 +145,11 @@ public class SQS {
     }
 
     public record TransactionMessageProcessed(String kind, String messageId, MessageStatus status, String user,
-            Boolean withError, AiTransactionResponse content) {
+            Boolean withError, RecordInfo content) {
     }
 
     public record SimpleMessageProcessed(String kind, String messageId, MessageStatus status, String user,
-            AiSimpleMessageResponse content) {
+            SimpleMessage content) {
     }
 
     public record IncomingMessage(String sender, MessageKind kind, String messageId, MessageStatus status,

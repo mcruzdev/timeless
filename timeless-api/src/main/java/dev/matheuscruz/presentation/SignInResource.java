@@ -1,11 +1,15 @@
 package dev.matheuscruz.presentation;
 
 import dev.matheuscruz.domain.User;
-import dev.matheuscruz.infra.persistence.UserRepository;
+import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.infra.security.BCryptAdapter;
 import dev.matheuscruz.infra.security.Groups;
 import io.quarkus.panache.common.Parameters;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -23,7 +27,7 @@ public class SignInResource {
     }
 
     @POST
-    public Response signIn(SignInRequest req) {
+    public Response signIn(@Valid SignInRequest req) {
 
         User user = userRepository.find("email = :email", Parameters.with("email", req.email())).firstResultOptional()
                 .orElseThrow(ForbiddenException::new);
@@ -41,7 +45,7 @@ public class SignInResource {
                 .build();
     }
 
-    public record SignInRequest(String email, String password) {
+    public record SignInRequest(@Email String email, @NotBlank @Size(min = 6) String password) {
     }
 
     public record SignInResponse(String token, String id, String name, String email, Boolean hasPhoneNumber) {
