@@ -23,42 +23,23 @@ public class Record {
     private BigDecimal amount;
     private String description;
     @Enumerated(EnumType.STRING)
-    private RecordType recordType;
-    @Enumerated(EnumType.STRING)
-    private OutcomeType outcomeType;
-    private Instant createdAt;
+    private Transactions transaction;
     @Enumerated(EnumType.STRING)
     private Categories category;
+    private Instant createdAt;
 
     protected Record() {
     }
 
-    private Record(String userId, BigDecimal amount, String description, RecordType recordType, OutcomeType outcomeType,
+    private Record(String userId, BigDecimal amount, String description, Transactions transaction,
             Categories category) {
         this.userId = userId;
         this.amount = amount;
         this.description = description;
-        this.recordType = recordType;
-        this.outcomeType = outcomeType;
+        this.transaction = transaction;
+        this.category = category;
         this.createdAt = Instant.now();
         this.category = Optional.ofNullable(category).orElse(Categories.NONE);
-    }
-
-    public static Record create(String userId, BigDecimal amount, String description, RecordType type,
-            Categories category) {
-        return new Record(userId, amount, description, type,
-                type.equals(RecordType.IN) ? OutcomeType.NONE : OutcomeType.GENERAL, category);
-    }
-
-    public static Record createIncome(String userId, BigDecimal amount, String description) {
-        return new Record(userId, amount, description, RecordType.IN, OutcomeType.NONE, Categories.NONE);
-    }
-
-    public static Record createOutcome(String userId, BigDecimal amount, String description, OutcomeType type,
-            Categories category) {
-        return new Record(Objects.requireNonNull(userId), Objects.requireNonNull(amount),
-                Objects.requireNonNull(description), Objects.requireNonNull(RecordType.OUT),
-                Objects.requireNonNullElse(type, OutcomeType.GENERAL), category);
     }
 
     public Long getId() {
@@ -77,19 +58,62 @@ public class Record {
         return description;
     }
 
-    public RecordType getRecordType() {
-        return recordType;
+    public Transactions getTransaction() {
+        return transaction;
     }
 
-    public OutcomeType getOutcomeType() {
-        return outcomeType;
+    public Categories getCategory() {
+        return Optional.ofNullable(category).orElse(Categories.NONE);
     }
 
     public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public Categories getCategory() {
-        return Optional.ofNullable(category).orElse(Categories.NONE);
+    public static class Builder {
+        private String userId;
+        private BigDecimal amount;
+        private String description;
+        private Transactions transaction;
+        private Categories category;
+
+        public Builder userId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder amount(BigDecimal amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder transaction(Transactions transaction) {
+            this.transaction = transaction;
+            return this;
+        }
+
+        public Builder category(Categories category) {
+            this.category = category;
+            return this;
+        }
+
+        public Record build() {
+            Objects.requireNonNull(userId, "userId must not be null");
+            Objects.requireNonNull(amount, "amount must not be null");
+            Objects.requireNonNull(description, "description must not be null");
+            Objects.requireNonNull(transaction, "transaction must not be null");
+
+            if (transaction == Transactions.IN) {
+                category = Categories.NONE;
+            }
+            category = Optional.ofNullable(category).orElse(Categories.GENERAL);
+
+            return new Record(userId, amount, description, transaction, category);
+        }
     }
 }

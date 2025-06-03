@@ -1,6 +1,5 @@
-package dev.matheuscruz.infra.persistence;
+package dev.matheuscruz.domain;
 
-import dev.matheuscruz.domain.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;

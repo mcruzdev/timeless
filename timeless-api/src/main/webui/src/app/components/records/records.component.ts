@@ -40,8 +40,8 @@ export class RecordsComponent {
       if (body.items.length > 0) {
         this.records = body.items.map(item => ({
           ...item,
-          tag: item.recordType === 'OUT' ? 'Saída' : 'Entrada',
-          icon: item.recordType === 'OUT' ? 'pi pi-arrow-circle-up' : 'pi pi-arrow-circle-down'
+          tag: item.transaction === 'OUT' ? 'Saída' : 'Entrada',
+          icon: item.transaction === 'OUT' ? 'pi pi-arrow-circle-up' : 'pi pi-arrow-circle-down'
         }))
 
         this.totalRecords.set(body.totalRecords)

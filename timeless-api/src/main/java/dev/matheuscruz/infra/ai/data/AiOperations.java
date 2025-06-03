@@ -1,11 +1,11 @@
 package dev.matheuscruz.infra.ai.data;
 
-public enum AiCommands {
+public enum AiOperations {
     ADD_TRANSACTION("ADD_TRANSACTION"), GET_BALANCE("GET_BALANCE");
 
     private final String commandName;
 
-    AiCommands(String name) {
+    AiOperations(String name) {
         this.commandName = name;
     }
 

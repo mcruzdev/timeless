@@ -74,6 +74,6 @@ export interface RecordPageResponse {
 export interface RecordResponseItem {
   amount: number
   description: string
-  recordType: string
+  transaction: string
   createdAt: string
 }
