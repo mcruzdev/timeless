@@ -83,10 +83,6 @@
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.amazonservices</groupId>
-            <artifactId>quarkus-amazon-s3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.amazonservices</groupId>
             <artifactId>quarkus-amazon-sqs</artifactId>
         </dependency>
         <dependency>

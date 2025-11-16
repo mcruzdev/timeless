@@ -98,9 +98,10 @@ client.on("message", async (message) => {
     const sender = (await message.getContact()).id.user
     if (!users.includes(sender)) {
         console.log(
-            "This number is not authorized to communicate with the bot.",
+            "This number is not authorized to communicate with the bot:",
             sender
         )
+        return;
     }
 
     message.reply("Estamos processando sua mensagem")
