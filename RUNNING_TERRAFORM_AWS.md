@@ -26,7 +26,7 @@ EOF
 
 Change the `bucket`, `key` and `region` as you want.
 
-4. Initialize the Terraform 
+4. Initialize the Terraform
 
 ```shell
 terraform init -backend-config=aws-backend.conf
@@ -54,7 +54,6 @@ cd timeless-api
 cat > .env <<EOF
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
-ASSETS_BUCKET=
 OPENAI_API_KEY=
 SECURITY_KEY=
 INCOMING_MESSAGE_FIFO_URL=
@@ -76,19 +75,17 @@ The table below explains the purpose of each variable along with suggested examp
 | `INCOMING_MESSAGE_FIFO_URL`  | The URL of the SQS FIFO queue for incoming messages                                          | `https://sqs.us-east-1.amazonaws.com/123456789/incoming-messages.fifo` |
 | `MESSAGES_PROCESSED_FIFO_URL`| The URL of the SQS FIFO queue for processed messages                                        | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo` |
 
-
 4. Execute the application in Dev mode
 
 ```shell
 ./mvnw quarkus:dev -Dquarkus.profile=aws
 ```
 
-5. Sign up at http://localhost:8080/sign-up
+5. Sign up at <http://localhost:8080/sign-up>
 
-6. Sign in at http://localhost:8080
+6. Sign in at <http://localhost:8080>
 
-7. Add the user phone number at http://localhost:8080/home/user-configs, this phone number must be set after on `ALLOWED_USERS`.
-
+7. Add the user phone number at <http://localhost:8080/home/user-configs>, this phone number must be set after on `ALLOWED_USERS`.
 
 ## Configuring and running the whatsapp application
 
@@ -122,7 +119,6 @@ npm run start
 
 ![scan-qr-code](docs/images/scan-qr-code.png)
 
-
 ## After configuring and running all applications
 
 ### How to Use the Application
@@ -139,6 +135,3 @@ npm run start
    ![success](docs/images/message-processed-successfully.png)
 
 6. Refresh the page and see your balance go negative — good luck managing your expenses!
-
-
-

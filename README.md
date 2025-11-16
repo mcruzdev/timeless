@@ -40,7 +40,7 @@ If you want to use Terraform and AWS see [this tutorial](RUNNING_TERRAFORM_AWS.m
 
 ### Execute the infrastructure
 
-1. Go to `infrastructure/docker` directory
+1. Go to `docker` directory
 
 2. Run all necessary containers:
 

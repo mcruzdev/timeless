@@ -2,7 +2,6 @@ package dev.matheuscruz.presentation;
 
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Parameters;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
