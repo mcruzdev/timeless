@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    types: [opened, synchronize]
     branches: [ main ]
 
 permissions:
@@ -11,6 +12,7 @@ permissions:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
 
 jobs:
   api:
@@ -22,6 +24,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -30,8 +36,10 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Build & Test
-        run: ./mvnw -B -ntp -DskipITs=true verify
+      - name: Build with Maven and Run Linter
+        run: mvn clean verify
+        
+        
   webui:
     name: Angular Build (timeless-api webui)
     runs-on: ubuntu-latest
@@ -41,6 +49,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
