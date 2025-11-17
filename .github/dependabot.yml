@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /whatsapp
+    schedule:
+      interval: daily    
+    labels:
+      - dependencies
+      - whatsapp    
+    commit-message:
+      prefix: chore
+      include: scope
