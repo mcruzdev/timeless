@@ -6,7 +6,7 @@ updates:
       interval: daily
     labels:
       - dependencies
-      - whatsapp    
+      - whatsapp
     commit-message:
       prefix: chore
       include: scope
