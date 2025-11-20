@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: npm
     directory: /whatsapp
     schedule:
-      interval: daily    
+      interval: daily
     labels:
       - dependencies
       - whatsapp    
