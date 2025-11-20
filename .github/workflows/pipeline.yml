@@ -32,14 +32,35 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: timeless-api/src/main/webui/package-lock.json
+
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install Frontend Dependencies
+        working-directory: ./timeless-api/src/main/webui
+        run: npm ci
+
+      - name: Lint Frontend (Prettier)
+        working-directory: ./timeless-api/src/main/webui
+        run: npx prettier . --check
+
       - name: Ensure Maven wrapper is executable
         run: chmod +x mvnw
 
       - name: Lint (Formatter Validate)
-        run: ./mvnw -B clean package formatter:validate impsort:check
+        run: ./mvnw -B clean package formatter:validate impsort:check -Dquarkus.quinoa.run-tests=false
 
       - name: Build with unit and integration tests
         run: ./mvnw -B -ntp verify
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
 
 
   whatsapp:
@@ -66,38 +87,4 @@ jobs:
       - name: Prettier Check
         run: npm run prettier:check
 
-  timeless-api-webui:
-    name: Build & Test - Timeless WebUI (Angular)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./timeless-api/src/main/webui
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: timeless-api/src/main/webui/package-lock.json
-
-      - name: Setup Chrome
-        id: chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Lint (Prettier)
-        run: npx prettier . --check
-
-      - name: Run Angular Tests
-        run: npm test -- --watch=false --browsers=ChromeHeadless
-        env:
-          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
-
-      - name: Build Angular
-        run: npm run build --if-present
