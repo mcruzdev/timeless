@@ -93,3 +93,7 @@ After connected the device with the scanned QR Code, send the following message:
 You should receive something like it:
 
 ![success](docs/images/message-processed-successfully.png)
+
+### How to contribute
+
+[CONTRIBUTING.md](CONTRIBUTING.md)
