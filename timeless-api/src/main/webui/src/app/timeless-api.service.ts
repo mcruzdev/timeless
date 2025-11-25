@@ -1,79 +1,76 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {notNumbers, timelessLocalStorageKey} from './constants';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { notNumbers, timelessLocalStorageKey } from './constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TimelessApiService {
-
-  constructor(private readonly httpClient: HttpClient) {
-  }
+  constructor(private readonly httpClient: HttpClient) {}
 
   signIn(value: any): Observable<SignInResponse> {
-    return this.httpClient.post<SignInResponse>("api/sign-in", {
-      ...value
-    })
+    return this.httpClient.post<SignInResponse>('api/sign-in', {
+      ...value,
+    });
   }
 
   getRecords(page: number, size: number): Observable<RecordPageResponse> {
-    const httpParams = new HttpParams()
-    const params = httpParams.append("page", page).append("limit", size)
-    console.log(params)
+    const httpParams = new HttpParams();
+    const params = httpParams.append('page', page).append('limit', size);
+    console.log(params);
     return this.httpClient.get<RecordPageResponse>('/api/records', {
-      params
-    })
+      params,
+    });
   }
 
   signUp(value: any) {
     return this.httpClient.post('/api/sign-up', {
-      ...value
-    })
+      ...value,
+    });
   }
 
   updatePhoneNumber(phoneNumber: string) {
-    const data = localStorage.getItem(timelessLocalStorageKey)
+    const data = localStorage.getItem(timelessLocalStorageKey);
     if (data == null) {
-      throw new Error()
+      throw new Error();
     }
 
-    const user = JSON.parse(data)
+    const user = JSON.parse(data);
     return this.httpClient.patch('/api/users', {
       id: user.id,
-      phoneNumber: phoneNumber.replace(notNumbers, '')
-    })
+      phoneNumber: phoneNumber.replace(notNumbers, ''),
+    });
   }
 
   userInfo() {
-    const data = localStorage.getItem(timelessLocalStorageKey)
+    const data = localStorage.getItem(timelessLocalStorageKey);
     if (data == null) {
-      throw new Error()
+      throw new Error();
     }
-    const user = JSON.parse(data)
-    return this.httpClient.get(`/api/users/${user.id}`)
+    const user = JSON.parse(data);
+    return this.httpClient.get(`/api/users/${user.id}`);
   }
 
   deleteRecord(id: number) {
-    return this.httpClient.delete(`/api/records/${id}`)
+    return this.httpClient.delete(`/api/records/${id}`);
   }
 }
 
 interface SignInResponse {
-  token: string
+  token: string;
 }
 
-
 export interface RecordPageResponse {
-  items: RecordResponseItem[]
-  totalRecords: number
-  totalIn: number
-  totalExpenses: number
+  items: RecordResponseItem[];
+  totalRecords: number;
+  totalIn: number;
+  totalExpenses: number;
 }
 
 export interface RecordResponseItem {
-  amount: number
-  description: string
-  transaction: string
-  createdAt: string
+  amount: number;
+  description: string;
+  transaction: string;
+  createdAt: string;
 }
