@@ -101,7 +101,7 @@ client.on("message", async (message) => {
             "This number is not authorized to communicate with the bot:",
             sender
         )
-        return;
+        return
     }
 
     message.reply("Estamos processando sua mensagem")
