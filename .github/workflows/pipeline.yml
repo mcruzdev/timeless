@@ -55,7 +55,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Lint (Formatter Validate)
-        run: ./mvnw -B clean package formatter:validate impsort:check -Dquarkus.quinoa.run-tests=false
+        run: ./mvnw -B clean package formatter:validate impsort:check
 
       - name: Build with unit and integration tests
         run: ./mvnw -B -ntp verify
