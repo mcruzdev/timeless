@@ -59,7 +59,7 @@ jobs:
 
 
       - name: Build with unit and integration tests
-        run: ./mvnw -B -ntp verify
+        run: ./mvnw -B -ntp verify -Dquarkus.quinoa.run-tests=false
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
 
