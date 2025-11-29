@@ -67,7 +67,7 @@
       <td class="text-sm">
         <p-tag
           rounded="true"
-          value="{{ record.tag }}"
+          [value]="isMobile() ? '' : record.tag"
           [icon]="record.icon"
           [severity]="record.transaction == 'IN' ? 'success' : 'danger'"
         ></p-tag>
