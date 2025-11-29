@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, HostListener } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { CurrencyPipe } from '@angular/common';
@@ -26,11 +26,22 @@ export class RecordsComponent {
   totalRecords = signal<number>(0);
   totalIn = signal<number>(0);
   totalExpenses = signal<number>(0);
+  hideTag = signal(false);
+  isMobile = signal(false);
 
   constructor() {
+    this.checkScreenSize();
     this.populatePaginator();
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    this.isMobile.set(window.innerWidth <= 1280);
+  }
   private populatePaginator() {
     this.timelessApiService
       .getRecords(this.first(), this.rows())
@@ -41,8 +52,8 @@ export class RecordsComponent {
             tag: item.transaction === 'OUT' ? 'Saída' : 'Entrada',
             icon:
               item.transaction === 'OUT'
-                ? 'pi pi-arrow-circle-up'
-                : 'pi pi-arrow-circle-down',
+                ? 'pi pi-arrow-circle-down'
+                : 'pi pi-arrow-circle-up',
           }));
 
           this.totalRecords.set(body.totalRecords);

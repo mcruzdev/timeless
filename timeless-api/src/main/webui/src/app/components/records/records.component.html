@@ -12,7 +12,9 @@
 
 <div class="flex flex-col md:flex-row gap-2">
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Saldo</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Saldo</p>
+    </ng-template>
 
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
@@ -23,7 +25,9 @@
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Entradas</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Entradas</p>
+    </ng-template>
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
         {{ totalIn() | currency: "BRL" }}
@@ -33,7 +37,9 @@
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Saídas</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Saídas</p>
+    </ng-template>
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
         {{ totalExpenses() | currency: "BRL" }}
