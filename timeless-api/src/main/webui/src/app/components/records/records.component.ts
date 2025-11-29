@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener  } from '@angular/core';
+import { Component, inject, signal, HostListener } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { CurrencyPipe } from '@angular/common';
