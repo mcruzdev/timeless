@@ -14,16 +14,16 @@ import { Button } from 'primeng/button';
   selector: 'app-records',
   imports: [TableModule, Tag, CurrencyPipe, Paginator, Card, Button],
   templateUrl: './records.component.html',
-  styleUrl: './records.component.scss',,
+  styleUrl: './records.component.scss',
 })
 export class RecordsComponent {
-  eyes = signal(true);;
-  balance = signal(0);;
-  records: RecordResponseItem[] = [];;
-  timelessApiService = inject(TimelessApiService);;
-  first = signal<number>(0);;
-  rows = signal<number>(10);;
-  totalRecords = signal<number>(0);;
+  eyes = signal(true);
+  balance = signal(0);
+  records: RecordResponseItem[] = [];
+  timelessApiService = inject(TimelessApiService);
+  first = signal<number>(0);
+  rows = signal<number>(10);
+  totalRecords = signal<number>(0);
   totalIn = signal<number>(0);
   totalExpenses = signal<number>(0);
   hideTag = signal(false);
