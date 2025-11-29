@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, HostListener } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { CurrencyPipe } from '@angular/common';
@@ -26,32 +26,40 @@ export class RecordsComponent {
   totalRecords = signal<number>(0);
   totalIn = signal<number>(0);
   totalExpenses = signal<number>(0);
+  hideTag = signal(false);
+  isMobile = signal(false);
+
 
   constructor() {
+    this.checkScreenSize();
     this.populatePaginator();
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    this.isMobile.set(window.innerWidth <= 1280);
+  }
   private populatePaginator() {
-    this.timelessApiService
-      .getRecords(this.first(), this.rows())
-      .subscribe((body) => {
-        if (body.items.length > 0) {
-          this.records = body.items.map((item) => ({
-            ...item,
-            tag: item.transaction === 'OUT' ? 'Saída' : 'Entrada',
-            icon:
-              item.transaction === 'OUT'
-                ? 'pi pi-arrow-circle-up'
-                : 'pi pi-arrow-circle-down',
-          }));
 
-          this.totalRecords.set(body.totalRecords);
-          this.totalIn.set(body.totalIn);
-          this.totalExpenses.set(body.totalExpenses);
+    this.timelessApiService.getRecords(this.first(), this.rows()).subscribe(body => {
+      if (body.items.length > 0) {
+        this.records = body.items.map(item => ({
+          ...item,
+          tag: item.transaction === 'OUT' ? 'Saída' : 'Entrada',
+          icon: item.transaction === 'OUT' ? 'pi pi-arrow-circle-down' : 'pi pi-arrow-circle-up'
+        }))
 
-          this.balance.set(this.totalIn() - this.totalExpenses());
-        }
-      });
+        this.totalRecords.set(body.totalRecords);
+        this.totalIn.set(body.totalIn);
+        this.totalExpenses.set(body.totalExpenses);
+
+        this.balance.set(this.totalIn() - this.totalExpenses())
+      }
+    });
   }
 
   changeEyes() {
