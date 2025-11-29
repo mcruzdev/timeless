@@ -6,10 +6,6 @@ import {
   RecordResponseItem,
   TimelessApiService,
 } from '../../timeless-api.service';
-import {
-  RecordResponseItem,
-  TimelessApiService,
-} from '../../timeless-api.service';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -17,19 +13,10 @@ import { Button } from 'primeng/button';
 @Component({
   selector: 'app-records',
   imports: [TableModule, Tag, CurrencyPipe, Paginator, Card, Button],
-  imports: [TableModule, Tag, CurrencyPipe, Paginator, Card, Button],
   templateUrl: './records.component.html',
-  styleUrl: './records.component.scss',
   styleUrl: './records.component.scss',
 })
 export class RecordsComponent {
-  eyes = signal(true);
-  balance = signal(0);
-  records: RecordResponseItem[] = [];
-  timelessApiService = inject(TimelessApiService);
-  first = signal<number>(0);
-  rows = signal<number>(10);
-  totalRecords = signal<number>(0);
   eyes = signal(true);
   balance = signal(0);
   records: RecordResponseItem[] = [];
@@ -56,6 +43,7 @@ export class RecordsComponent {
     this.isMobile.set(window.innerWidth <= 1280);
   }
   private populatePaginator() {
+
     this.timelessApiService
       .getRecords(this.first(), this.rows())
       .subscribe((body) => {
