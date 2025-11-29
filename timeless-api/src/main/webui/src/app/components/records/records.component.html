@@ -1,7 +1,12 @@
 <div class="flex flex-row gap-2 items-center my-2">
   <h2 class="font-semibold text-2xl">Overview</h2>
   <div class="flex flex-row gap-2 w-full items-center">
-    <p-button [icon]="eyes() ? 'pi pi-eye-slash' : 'pi pi-eye'" (click)="changeEyes()" [text]="true" rounded="true" />
+    <p-button
+      [icon]="eyes() ? 'pi pi-eye-slash' : 'pi pi-eye'"
+      (click)="changeEyes()"
+      [text]="true"
+      rounded="true"
+    />
   </div>
 </div>
 
@@ -12,9 +17,11 @@
     </ng-template>
 
     @if (eyes()) {
-    <p class="flex-1 text-base font-semibold text-left">{{ balance() | currency: 'BRL' }}</p>
+      <p class="flex-1 text-base font-semibold text-left">
+        {{ balance() | currency: "BRL" }}
+      </p>
     } @else {
-    <p class="flex-1 text-base font-light">••••••</p>
+      <p class="flex-1 text-base font-light">••••••</p>
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
@@ -22,9 +29,11 @@
       <p class="font-extralight">Entradas</p>
     </ng-template>
     @if (eyes()) {
-    <p class="flex-1 text-base font-semibold text-left">{{ totalIn() | currency: 'BRL' }}</p>
+      <p class="flex-1 text-base font-semibold text-left">
+        {{ totalIn() | currency: "BRL" }}
+      </p>
     } @else {
-    <p class="flex-1 text-base font-light">••••••</p>
+      <p class="flex-1 text-base font-light">••••••</p>
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
@@ -32,9 +41,11 @@
       <p class="font-extralight">Saídas</p>
     </ng-template>
     @if (eyes()) {
-    <p class="flex-1 text-base font-semibold text-left">{{ totalExpenses() | currency: 'BRL' }}</p>
+      <p class="flex-1 text-base font-semibold text-left">
+        {{ totalExpenses() | currency: "BRL" }}
+      </p>
     } @else {
-    <p class="flex-1 text-base font-light">••••••</p>
+      <p class="flex-1 text-base font-light">••••••</p>
     }
   </p-card>
 </div>
@@ -53,23 +64,36 @@
     <tr>
       <td class="text-sm w-[200px]">
         @if (eyes()) {
-        {{ record.amount | currency: 'BRL' }}
+          {{ record.amount | currency: "BRL" }}
         } @else {
-        ••••••
+          ••••••
         }
       </td>
       <td class="text-sm">{{ record.description }}</td>
       <td class="text-sm">
-        <p-tag rounded="true" value="{{ record.tag }}" [icon]="record.icon"
-          [severity]="record.transaction == 'IN' ? 'success' : 'danger'"></p-tag>
+        <p-tag
+          rounded="true"
+          value="{{ record.tag }}"
+          [icon]="record.icon"
+          [severity]="record.transaction == 'IN' ? 'success' : 'danger'"
+        ></p-tag>
       </td>
       <td class="text-sm">{{ record.createdAt }}</td>
       <td class="text-sm">
-        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" (click)="deleteRecord(record.id)" />
+        <p-button
+          icon="pi pi-trash"
+          [rounded]="true"
+          [text]="true"
+          (click)="deleteRecord(record.id)"
+        />
       </td>
     </tr>
   </ng-template>
 </p-table>
 
-<p-paginator (onPageChange)="onPageChange($event)" [rows]="rows()" [totalRecords]="totalRecords()"
-  [rowsPerPageOptions]="[10, 20, 30]" />
+<p-paginator
+  (onPageChange)="onPageChange($event)"
+  [rows]="rows()"
+  [totalRecords]="totalRecords()"
+  [rowsPerPageOptions]="[10, 20, 30]"
+/>
