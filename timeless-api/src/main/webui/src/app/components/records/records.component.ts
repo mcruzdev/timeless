@@ -14,16 +14,16 @@ import { Button } from 'primeng/button';
   selector: 'app-records',
   imports: [TableModule, Tag, CurrencyPipe, Paginator, Card, Button],
   templateUrl: './records.component.html',
-  styleUrl: './records.component.scss',
+  styleUrl: './records.component.scss',,
 })
 export class RecordsComponent {
-  eyes = signal(true);
-  balance = signal(0);
-  records: RecordResponseItem[] = [];
-  timelessApiService = inject(TimelessApiService);
-  first = signal<number>(0);
-  rows = signal<number>(10);
-  totalRecords = signal<number>(0);
+  eyes = signal(true);;
+  balance = signal(0);;
+  records: RecordResponseItem[] = [];;
+  timelessApiService = inject(TimelessApiService);;
+  first = signal<number>(0);;
+  rows = signal<number>(10);;
+  totalRecords = signal<number>(0);;
   totalIn = signal<number>(0);
   totalExpenses = signal<number>(0);
   hideTag = signal(false);
@@ -43,7 +43,6 @@ export class RecordsComponent {
     this.isMobile.set(window.innerWidth <= 1280);
   }
   private populatePaginator() {
-
     this.timelessApiService
       .getRecords(this.first(), this.rows())
       .subscribe((body) => {
@@ -68,22 +67,15 @@ export class RecordsComponent {
 
   changeEyes() {
     this.eyes.update((value) => !value);
-    this.eyes.update((value) => !value);
   }
 
   onPageChange($event: PaginatorState) {
     this.first.set($event.page || 0);
     this.rows.set($event.rows || 10);
     this.populatePaginator();
-    this.first.set($event.page || 0);
-    this.rows.set($event.rows || 10);
-    this.populatePaginator();
   }
 
   deleteRecord(id: number) {
-    this.timelessApiService.deleteRecord(id).subscribe(() => {
-      this.populatePaginator();
-    });
     this.timelessApiService.deleteRecord(id).subscribe(() => {
       this.populatePaginator();
     });
