@@ -1,45 +1,78 @@
-<form [formGroup]="form" (ngSubmit)="update()" class="flex flex-col items-center justify-center p-8">
+<form
+  [formGroup]="form"
+  (ngSubmit)="update()"
+  class="flex flex-col items-center justify-center p-8"
+>
   <p-card header="Dados pessoais">
-
     <div class="flex flex-col gap-2">
-
       <div class="flex flex-row gap-2">
         <div class="flex flex-col">
           <label for="firstName">First name</label>
-          <input pInputText pSize="small" id="firstName" formControlName="firstName"
+          <input
+            pInputText
+            pSize="small"
+            id="firstName"
+            formControlName="firstName"
           />
         </div>
         <div class="flex flex-col">
           <label for="firstName">Last name</label>
-          <input pInputText pSize="small" [disabled]="true" id="lastName"
-                 formControlName="lastName"/>
+          <input
+            pInputText
+            pSize="small"
+            [disabled]="true"
+            id="lastName"
+            formControlName="lastName"
+          />
         </div>
       </div>
 
       <div class="flex flex-col">
         <label for="email">Email</label>
-        <input pInputText pSize="small" [disabled]="true" id="email"
-               formControlName="email"/>
+        <input
+          pInputText
+          pSize="small"
+          [disabled]="true"
+          id="email"
+          formControlName="email"
+        />
       </div>
 
       <div class="flex flex-row gap-2">
         <div class="flex flex-col">
           <label for="password">Password</label>
-          <input pInputText pSize="small" [disabled]="true" id="password" type="password"
-                 value="******"/>
+          <input
+            pInputText
+            pSize="small"
+            [disabled]="true"
+            id="password"
+            type="password"
+            value="******"
+          />
         </div>
 
         <div class="flex flex-col">
           <label for="firstName">Phone number</label>
-          <p-inputmask mask="+55 (99) 99999-9999" size="small" placeholder="+55 (99) 99999-9999"
-                       formControlName="phoneNumber"/>
+          <p-inputmask
+            mask="+55 (99) 99999-9999"
+            size="small"
+            placeholder="+55 (99) 99999-9999"
+            formControlName="phoneNumber"
+          />
         </div>
       </div>
     </div>
 
     <ng-template #footer>
-      <p-button severity="contrast" icon="pi pi-save" size="small" iconPos="left" [style]="{'width': '100%'}"
-                type="submit" label="Salvar"/>
+      <p-button
+        severity="contrast"
+        icon="pi pi-save"
+        size="small"
+        iconPos="left"
+        [style]="{ width: '100%' }"
+        type="submit"
+        label="Salvar"
+      />
     </ng-template>
   </p-card>
 </form>
