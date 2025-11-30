@@ -31,7 +31,7 @@ export class SignUpComponent {
   formBuilder = inject(FormBuilder);
   form: FormGroup = this.formBuilder.group({
     email: ['', [Validators.email, Validators.required]],
-    password: ['', [Validators.minLength(6), Validators.required]],
+    password: ['', [Validators.minLength(8), Validators.required]],
     firstName: ['', [Validators.required, Validators.minLength(1)]],
     lastName: ['', [Validators.required, Validators.minLength(1)]],
   });
