@@ -8,6 +8,8 @@ import { TimelessApiService } from '../../../timeless-api.service';
 import { FloatLabel } from 'primeng/floatlabel';
 import { MessageService } from 'primeng/api';
 import { timelessLocalStorageKey } from '../../../constants';
+import { catchError, throwError } from 'rxjs';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-sign-in',
@@ -18,6 +20,7 @@ import { timelessLocalStorageKey } from '../../../constants';
     CardModule,
     RouterLink,
     FloatLabel,
+    Toast,
   ],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.scss',
@@ -48,11 +51,26 @@ export class SignInComponent {
       return;
     }
 
-    this.timelessApiService.signIn(this.form.value).subscribe((value) => {
-      localStorage.setItem(timelessLocalStorageKey, JSON.stringify(value));
-      this.router.navigate(['/home']).then((r) => {
-        console.log('logged in');
+    this.timelessApiService
+      .signIn(this.form.value)
+      .pipe(
+        catchError((error) => {
+          console.error('Login error:', error);
+          this.messageService.add({
+            key: 'toast',
+            severity: 'error',
+            summary: 'Erro ao fazer login',
+            detail:
+              'Não foi possível fazer login, verifique suas credenciais e tente novamente.',
+          });
+          return throwError(() => error);
+        }),
+      )
+      .subscribe((value) => {
+        localStorage.setItem(timelessLocalStorageKey, JSON.stringify(value));
+        this.router.navigate(['/home']).then((r) => {
+          console.log('logged in');
+        });
       });
-    });
   }
 }
