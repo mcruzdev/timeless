@@ -2,7 +2,7 @@ package dev.matheuscruz.infra.ai;
 
 import dev.langchain4j.data.image.Image;
 import dev.langchain4j.service.UserMessage;
-import dev.matheuscruz.infra.ai.data.RecordInfo;
+import dev.matheuscruz.infra.ai.data.RecognizedTransaction;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
 @RegisterAiService(modelName = "gpt-4-turbo")
@@ -59,5 +59,5 @@ public interface ImageAiService {
             {description}
             ---
             """)
-    RecordInfo handleTransactionImage(Image image, String description);
+    RecognizedTransaction handleTransactionImage(Image image, String description);
 }

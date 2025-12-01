@@ -1,6 +1,7 @@
 package dev.matheuscruz.infra.ai;
 
 import dev.langchain4j.service.UserMessage;
+import dev.matheuscruz.infra.ai.data.AllRecognizedOperations;
 import dev.matheuscruz.infra.ai.tools.GetBalanceTool;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
@@ -64,7 +65,7 @@ public interface TextAiService {
             Output:
             {
               "operation": "GET_BALANCE",
-              "content": "Você possui R$ 2.384,20 disponíveis na sua conta principal."
+              "content": { "description": "Você possui R$ 2.384,20 disponíveis na sua conta principal." }
             }
 
             Input:
@@ -79,6 +80,6 @@ public interface TextAiService {
             {message}
             ---
             """)
-    String handleMessage(String message);
+    AllRecognizedOperations handleMessage(String message);
 
 }
