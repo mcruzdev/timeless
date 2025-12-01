@@ -1,0 +1,5 @@
+**/node_modules
+**/.angular
+**/dist
+**/.wwebjs_cache
+**/wwebjs-auth
