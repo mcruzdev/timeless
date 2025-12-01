@@ -46,7 +46,7 @@ public class SignUpResource {
                 .build();
     }
 
-    public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8) String password,
+    public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password,
             @NotBlank String firstName, @NotBlank String lastName) {
     }
 
