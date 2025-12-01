@@ -42,7 +42,6 @@ export class SignInComponent {
 
   onSubmit() {
     if (this.form.invalid) {
-      console.log('Form is invalid');
       this.messageService.add({
         key: 'toast',
         severity: 'error',
