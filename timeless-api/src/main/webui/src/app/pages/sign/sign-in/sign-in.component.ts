@@ -41,7 +41,6 @@ export class SignInComponent {
   });
 
   onSubmit() {
-    console.log('Submitting form', this.form.value);
     if (this.form.invalid) {
       console.log('Form is invalid');
       this.messageService.add({
