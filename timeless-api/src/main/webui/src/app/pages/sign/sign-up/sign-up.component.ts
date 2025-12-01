@@ -31,7 +31,10 @@ export class SignUpComponent {
   formBuilder = inject(FormBuilder);
   form: FormGroup = this.formBuilder.group({
     email: ['', [Validators.email, Validators.required]],
-    password: ['', [Validators.minLength(8), Validators.maxLength(32), Validators.required]],
+    password: [
+      '',
+      [Validators.minLength(8), Validators.maxLength(32), Validators.required],
+    ],
     firstName: ['', [Validators.required, Validators.minLength(1)]],
     lastName: ['', [Validators.required, Validators.minLength(1)]],
   });
@@ -40,7 +43,7 @@ export class SignUpComponent {
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
     private readonly messageService: MessageService,
-  ) { }
+  ) {}
 
   onSubmit() {
     if (this.form.valid) {
