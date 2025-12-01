@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { TimelessApiService } from '../../timeless-api.service';
 import { MessageService } from 'primeng/api';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-user-config',
@@ -21,6 +22,7 @@ import { MessageService } from 'primeng/api';
     InputMask,
     FormsModule,
     ReactiveFormsModule,
+    Toast,
   ],
   templateUrl: './user-config.component.html',
   styleUrl: './user-config.component.scss',
