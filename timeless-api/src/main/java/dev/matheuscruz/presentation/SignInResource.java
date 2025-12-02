@@ -47,13 +47,11 @@ public class SignInResource {
         if (userOptional.isPresent()) {
             user = userOptional.get();
         } else {
-            // try to find by plain text
+
             try {
                 user = (User) entityManager.createNativeQuery("SELECT * FROM users WHERE email = :email", User.class)
                         .setParameter("email", req.email()).getSingleResult();
-
-                // if found, we need to migrate the user to the new encryption format
-                // but first we need to check the password
+                
                 Boolean checked = BCryptAdapter.checkPassword(req.password(), user.getPassword());
 
                 if (!checked) {
