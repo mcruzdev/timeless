@@ -12,6 +12,7 @@ import { timelessLocalStorageKey } from '../../constants';
 import { Menubar } from 'primeng/menubar';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { Message } from 'primeng/message';
+import { LogoutButtonComponent } from '../../components/logout-button/logout-button.component';
 
 @Component({
   selector: 'app-home',
@@ -26,6 +27,7 @@ import { Message } from 'primeng/message';
     RouterModule,
     Menubar,
     Message,
+    LogoutButtonComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -47,13 +49,17 @@ export class HomeComponent {
     private readonly router: Router,
     private readonly timelessApiService: TimelessApiService,
   ) {
-    const data = localStorage.getItem(timelessLocalStorageKey);
-    if (data == null) {
-      this.router.navigate(['']);
-      return;
-    }
-    this.timelessApiService.userInfo().subscribe((response: any) => {
-      this.hasPhoneNumber.set(response.hasPhoneNumber);
-    });
+    // const data = localStorage.getItem(timelessLocalStorageKey);
+    // if (data == null) {
+    //   this.router.navigate(['']);
+    //   return;
+    // }
+    // this.timelessApiService.userInfo().subscribe((response: any) => {
+    //   this.hasPhoneNumber.set(response.hasPhoneNumber);
+    // });
+  }
+  onLogout() {
+    this.timelessApiService.logout();
+    this.router.navigate(['/']);
   }
 }

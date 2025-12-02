@@ -55,6 +55,10 @@ export class TimelessApiService {
   deleteRecord(id: number) {
     return this.httpClient.delete(`/api/records/${id}`);
   }
+
+  logout() {
+    localStorage.removeItem(timelessLocalStorageKey);
+  }
 }
 
 interface SignInResponse {

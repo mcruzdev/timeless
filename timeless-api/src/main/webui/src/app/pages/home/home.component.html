@@ -13,7 +13,9 @@
     </div>
   </ng-template>
 
-  <ng-template #end></ng-template>
+  <ng-template #end>
+    <app-logout-button textButton="Sair" [disabled]="false"></app-logout-button>
+  </ng-template>
 </p-toolbar>
 <p-menubar
   [model]="items"
