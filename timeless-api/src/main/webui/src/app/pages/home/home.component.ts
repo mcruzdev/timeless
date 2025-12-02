@@ -49,14 +49,14 @@ export class HomeComponent {
     private readonly router: Router,
     private readonly timelessApiService: TimelessApiService,
   ) {
-    // const data = localStorage.getItem(timelessLocalStorageKey);
-    // if (data == null) {
-    //   this.router.navigate(['']);
-    //   return;
-    // }
-    // this.timelessApiService.userInfo().subscribe((response: any) => {
-    //   this.hasPhoneNumber.set(response.hasPhoneNumber);
-    // });
+    const data = localStorage.getItem(timelessLocalStorageKey);
+    if (data == null) {
+      this.router.navigate(['']);
+      return;
+    }
+    this.timelessApiService.userInfo().subscribe((response: any) => {
+      this.hasPhoneNumber.set(response.hasPhoneNumber);
+    });
   }
   onLogout() {
     this.timelessApiService.logout();
