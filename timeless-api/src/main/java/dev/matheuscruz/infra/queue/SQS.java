@@ -9,8 +9,9 @@ import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.infra.ai.TextAiService;
 import dev.matheuscruz.infra.ai.data.AiOperations;
-import dev.matheuscruz.infra.ai.data.ContextMessage;
-import dev.matheuscruz.infra.ai.data.RecordInfo;
+import dev.matheuscruz.infra.ai.data.AllRecognizedOperations;
+import dev.matheuscruz.infra.ai.data.RecognizedOperation;
+import dev.matheuscruz.infra.ai.data.RecognizedTransaction;
 import dev.matheuscruz.infra.ai.data.SimpleMessage;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.scheduler.Scheduled;
@@ -36,7 +37,7 @@ public class SQS {
 
     private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
 
-    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(ContextMessage.class);
+    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(RecognizedOperation.class);
 
     public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-messages.queue-url") String incomingMessagesUrl,
             @ConfigProperty(name = "whatsapp.messages-processed.queue-url") String messagesProcessedUrl,
@@ -76,13 +77,18 @@ public class SQS {
 
     private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
         try {
-            ContextMessage contextMessage = parseAiResponse(aiService.handleMessage(message.messageBody()));
+            AllRecognizedOperations allRecognizedOperations = aiService.handleMessage(message.messageBody());
 
-            switch (contextMessage.operation()) {
-                case AiOperations.ADD_TRANSACTION ->
-                        processTransactionMessage(user, message, receiptHandle, contextMessage);
-                case AiOperations.GET_BALANCE -> processSimpleMessage(user, message, receiptHandle, contextMessage);
-                default -> logger.warnf("Unknown operation type: %s", contextMessage.operation());
+            for (RecognizedOperation recognizedOperation : allRecognizedOperations.all()) {
+                switch (recognizedOperation.operation()) {
+                    case AiOperations.ADD_TRANSACTION ->
+                            processAddTransactionMessage(user, message, receiptHandle, recognizedOperation);
+                    case AiOperations.GET_BALANCE -> {
+                        logger.info("Processing GET_BALANCE operation" + recognizedOperation.recognizedTransaction());
+                        processSimpleMessage(user, message, receiptHandle, recognizedOperation);
+                    }
+                    default -> logger.warnf("Unknown operation type: %s", recognizedOperation.operation());
+                }
             }
 
         } catch (Exception e) {
@@ -90,17 +96,16 @@ public class SQS {
         }
     }
 
-    private void processTransactionMessage(User user, IncomingMessage message, String receiptHandle,
-            ContextMessage contextMessage) throws IOException {
-        RecordInfo transaction = objectMapper.readValue(contextMessage.content(), RecordInfo.class);
+    private void processAddTransactionMessage(User user, IncomingMessage message, String receiptHandle,
+            RecognizedOperation recognizedOperation) throws IOException {
+        RecognizedTransaction recognizedTransaction = recognizedOperation.recognizedTransaction();
+        sendProcessedMessage(new TransactionMessageProcessed(AiOperations.ADD_TRANSACTION.commandName(),
+                message.messageId(), MessageStatus.PROCESSED, user.getPhoneNumber(), recognizedTransaction.withError(),
+                recognizedTransaction));
 
-        sendProcessedMessage(
-                new TransactionMessageProcessed(AiOperations.ADD_TRANSACTION.commandName(), message.messageId(),
-                        MessageStatus.PROCESSED, user.getPhoneNumber(), transaction.withError(), transaction));
-
-        Record record = new Record.Builder().userId(user.getId()).amount(transaction.amount())
-                .description(transaction.description()).transaction(transaction.type()).category(transaction.category())
-                .build();
+        Record record = new Record.Builder().userId(user.getId()).amount(recognizedTransaction.amount())
+                .description(recognizedTransaction.description()).transaction(recognizedTransaction.type())
+                .category(recognizedTransaction.category()).build();
 
         QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(record));
 
@@ -110,8 +115,9 @@ public class SQS {
     }
 
     private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle,
-            ContextMessage contextMessage) throws IOException {
-        SimpleMessage response = new SimpleMessage(contextMessage.content());
+            RecognizedOperation recognizedOperation) throws IOException {
+        logger.infof("Processing simple message for user %s", recognizedOperation.recognizedTransaction());
+        SimpleMessage response = new SimpleMessage(recognizedOperation.recognizedTransaction().description());
         sendProcessedMessage(new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(), message.messageId(),
                 MessageStatus.PROCESSED, user.getPhoneNumber(), response));
         deleteMessageUsing(receiptHandle);
@@ -122,14 +128,6 @@ public class SQS {
         String messageBody = objectMapper.writeValueAsString(processedMessage);
         sqs.sendMessage(req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
                 .messageDeduplicationId(UUID.randomUUID().toString()).queueUrl(processedMessagesUrl));
-    }
-
-    private ContextMessage parseAiResponse(String response) {
-        try {
-            return AI_RESPONSE_READER.readValue(response);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse AI response", e);
-        }
     }
 
     private IncomingMessage parseIncomingMessage(String messageBody) {
@@ -145,7 +143,7 @@ public class SQS {
     }
 
     public record TransactionMessageProcessed(String kind, String messageId, MessageStatus status, String user,
-            Boolean withError, RecordInfo content) {
+            Boolean withError, RecognizedTransaction content) {
     }
 
     public record SimpleMessageProcessed(String kind, String messageId, MessageStatus status, String user,

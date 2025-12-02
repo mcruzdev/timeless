@@ -4,6 +4,6 @@ import dev.matheuscruz.domain.Categories;
 import dev.matheuscruz.domain.Transactions;
 import java.math.BigDecimal;
 
-public record RecordInfo(BigDecimal amount, String description, Transactions type, boolean withError,
+public record RecognizedTransaction(BigDecimal amount, String description, Transactions type, boolean withError,
         Categories category) {
 }
