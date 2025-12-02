@@ -51,13 +51,13 @@ public class SignInResource {
             try {
                 user = (User) entityManager.createNativeQuery("SELECT * FROM users WHERE email = :email", User.class)
                         .setParameter("email", req.email()).getSingleResult();
-                
+
                 Boolean checked = BCryptAdapter.checkPassword(req.password(), user.getPassword());
 
                 if (!checked) {
                     return Response.status(Response.Status.UNAUTHORIZED).build();
                 }
-                
+
                 String encryptedEmail = aesAdapter.encrypt(req.email());
                 String encryptedPhone = user.getPhoneNumber() != null ? aesAdapter.encrypt(user.getPhoneNumber())
                         : null;
@@ -65,7 +65,7 @@ public class SignInResource {
                 entityManager.createNativeQuery("UPDATE users SET email = :email, phone_number = :phone WHERE id = :id")
                         .setParameter("email", encryptedEmail).setParameter("phone", encryptedPhone)
                         .setParameter("id", user.getId()).executeUpdate();
-                
+
             } catch (NoResultException e) {
                 throw new ForbiddenException();
             } catch (Exception e) {
