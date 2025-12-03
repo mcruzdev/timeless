@@ -71,10 +71,20 @@ Navigate to the frontend directory (`timeless-api/src/main/webui`) and run the c
 cd timeless-api/src/main/webui
 npm run prettier:write
 ```
-Or
+
+#### Whatsapp
+
+Navigate to the directory (`timeless/whatsapp`) and run the code style check:
+
 ```bash
-npx prettier . --write
+cd timeless/whatsapp
 ```
+And run the code style check:
+
+```bash
+npm run prettier:write
+```
+
 This script will check and apply the correct code style to your frontend code.
 
 ### PreRequisites
