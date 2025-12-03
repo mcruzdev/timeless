@@ -56,4 +56,8 @@ export class HomeComponent {
       this.hasPhoneNumber.set(response.hasPhoneNumber);
     });
   }
+  onLogout() {
+    this.timelessApiService.logout();
+    this.router.navigate(['/']);
+  }
 }
