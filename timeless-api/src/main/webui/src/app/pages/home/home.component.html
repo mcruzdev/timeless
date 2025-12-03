@@ -14,7 +14,12 @@
   </ng-template>
 
   <ng-template #end>
-    <app-logout-button textButton="Sair" [disabled]="false"></app-logout-button>
+    <p-button
+      label="Sair"
+      icon="pi pi-sign-out"
+      severity="secondary"
+      (click)="onLogout()"
+    />
   </ng-template>
 </p-toolbar>
 <p-menubar

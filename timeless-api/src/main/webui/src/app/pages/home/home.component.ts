@@ -12,7 +12,6 @@ import { timelessLocalStorageKey } from '../../constants';
 import { Menubar } from 'primeng/menubar';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { Message } from 'primeng/message';
-import { LogoutButtonComponent } from '../../components/logout-button/logout-button.component';
 
 @Component({
   selector: 'app-home',
@@ -27,7 +26,6 @@ import { LogoutButtonComponent } from '../../components/logout-button/logout-but
     RouterModule,
     Menubar,
     Message,
-    LogoutButtonComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
