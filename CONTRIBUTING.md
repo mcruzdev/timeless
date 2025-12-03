@@ -49,6 +49,34 @@ Suggestions for improvements are also logged as [GitHub Issues](https://github.c
 4. Push to the original branch: `git push origin my-new-feature`.
 5. Create a Pull Request.
 
+### Before Submitting a PR
+
+To ensure your code follows the project's standards and passes the CI pipeline, please run the following commands before submitting your Pull Request.
+
+#### Backend (Java/Quarkus)
+
+Run the following command to clean, format, and package the application:
+
+```bash
+./mvnw clean package
+```
+
+This command will trigger the `impsort` and `formatter` plugins to ensure your imports and code style are correct.
+
+#### Frontend (Angular)
+
+Navigate to the frontend directory (`timeless-api/src/main/webui`) and run the code style check:
+
+```bash
+cd timeless-api/src/main/webui
+npm run prettier:write
+```
+Or
+```bash
+npx prettier . --write
+```
+This script will check and apply the correct code style to your frontend code.
+
 ### PreRequisites
 
 To run this project, you will need:
