@@ -45,7 +45,7 @@ public class SignInResource {
                 .build();
     }
 
-    public record SignInRequest(@Email String email, @NotBlank @Size(min = 6) String password) {
+    public record SignInRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password) {
     }
 
     public record SignInResponse(String token, String id, String name, String email, Boolean hasPhoneNumber) {
