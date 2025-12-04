@@ -3,10 +3,10 @@
   (ngSubmit)="update()"
   class="flex flex-col items-center p-4 md:p-8 w-full"
 >
-  <p-card header="Dados pessoais" class="w-full max-w-xl">
+  <p-card header="Dados pessoais" class="w-full max-w-xl mx-auto">
     <div class="flex flex-col gap-4">
-      <div class="flex flex-col md:flex-row gap-4">
-        <div class="flex flex-col w-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col">
           <label for="firstName">First name</label>
           <input
             pInputText
@@ -17,7 +17,7 @@
           />
         </div>
 
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col">
           <label for="lastName">Last name</label>
           <input
             pInputText
@@ -28,22 +28,20 @@
             class="w-full"
           />
         </div>
-      </div>
 
-      <div class="flex flex-col">
-        <label for="email">Email</label>
-        <input
-          pInputText
-          pSize="small"
-          [disabled]="true"
-          id="email"
-          formControlName="email"
-          class="w-full"
-        />
-      </div>
+        <div class="flex flex-col md:col-span-2">
+          <label for="email">Email</label>
+          <input
+            pInputText
+            pSize="small"
+            [disabled]="true"
+            id="email"
+            formControlName="email"
+            class="w-full"
+          />
+        </div>
 
-      <div class="flex flex-col md:flex-row gap-4">
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col">
           <label for="password">Password</label>
           <input
             pInputText
@@ -56,15 +54,16 @@
           />
         </div>
 
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col">
           <label for="phoneNumber">Phone number</label>
           <p-inputmask
             mask="+55 (99) 99999-9999"
             size="small"
             placeholder="+55 (99) 99999-9999"
             formControlName="phoneNumber"
-            class="w-full"
-          />
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          ></p-inputmask>
         </div>
       </div>
     </div>
