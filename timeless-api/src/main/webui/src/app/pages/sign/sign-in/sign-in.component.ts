@@ -6,10 +6,9 @@ import { Router, RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { TimelessApiService } from '../../../timeless-api.service';
 import { FloatLabel } from 'primeng/floatlabel';
-import { ToadService } from '../../../services/toad.service';
+import { ToastService } from '../../../services/toast.service';
 import { timelessLocalStorageKey } from '../../../constants';
 import { catchError, throwError } from 'rxjs';
-import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-sign-in',
@@ -20,7 +19,6 @@ import { Toast } from 'primeng/toast';
     CardModule,
     RouterLink,
     FloatLabel,
-    Toast,
   ],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.scss',
@@ -31,7 +29,7 @@ export class SignInComponent {
   constructor(
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
-    private readonly toad: ToadService,
+    private readonly toast: ToastService,
   ) {}
 
   form = this.formBuilder.group({
@@ -41,7 +39,7 @@ export class SignInComponent {
 
   onSubmit() {
     if (this.form.invalid) {
-      this.toad.error(
+      this.toast.error(
         'Algo está errado',
         'O formulário de login se encontra inválido',
       );
@@ -53,7 +51,7 @@ export class SignInComponent {
       .pipe(
         catchError((error) => {
           console.error('Login error:', error);
-          this.toad.error(
+          this.toast.error(
             'Erro ao fazer login',
             'Não foi possível fazer login, verifique suas credenciais e tente novamente.',
           );

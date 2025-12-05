@@ -4,12 +4,12 @@ import { MessageService } from 'primeng/api';
 @Injectable({
   providedIn: 'root',
 })
-export class ToadService {
+export class ToastService {
   private readonly defaultKey = 'toast';
 
   constructor(private readonly messageService: MessageService) {}
 
-  show(message: ToadMessage) {
+  show(message: ToastMessage) {
     this.messageService.add({
       key: this.defaultKey,
       ...message,
@@ -57,7 +57,7 @@ export class ToadService {
   }
 }
 
-export interface ToadMessage {
+export interface ToastMessage {
   key?: string;
   severity?: 'success' | 'info' | 'warn' | 'error' | string;
   summary?: string;
@@ -68,5 +68,3 @@ export interface ToadMessage {
   data?: any;
   id?: any;
 }
-
-
