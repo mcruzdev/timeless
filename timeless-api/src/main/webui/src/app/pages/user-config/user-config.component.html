@@ -65,20 +65,19 @@
             inputStyleClass="w-full"
           ></p-inputmask>
         </div>
+
+        <div class="flex flex-col md:col-span-2">
+          <button
+            pButton
+            severity="contrast"
+            icon="pi pi-save"
+            size="small"
+            type="submit"
+            label="Salvar"
+          ></button>
+        </div>
       </div>
     </div>
-
-    <ng-template #footer>
-      <p-button
-        severity="contrast"
-        icon="pi pi-save"
-        size="small"
-        iconPos="left"
-        class="w-full"
-        type="submit"
-        label="Salvar"
-      />
-    </ng-template>
   </p-card>
 </form>
 

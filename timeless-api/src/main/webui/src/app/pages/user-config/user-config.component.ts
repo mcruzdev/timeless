@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
-import { Button } from 'primeng/button';
+import { ButtonDirective, ButtonModule } from 'primeng/button';
 import { InputMask } from 'primeng/inputmask';
 import {
   FormBuilder,
@@ -18,11 +18,12 @@ import { Toast } from 'primeng/toast';
   imports: [
     Card,
     InputText,
-    Button,
     InputMask,
     FormsModule,
     ReactiveFormsModule,
+    ButtonModule,
     Toast,
+    ButtonDirective,
   ],
   templateUrl: './user-config.component.html',
   styleUrl: './user-config.component.scss',
