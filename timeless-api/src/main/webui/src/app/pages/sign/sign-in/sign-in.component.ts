@@ -6,7 +6,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { TimelessApiService } from '../../../timeless-api.service';
 import { FloatLabel } from 'primeng/floatlabel';
-import { MessageService } from 'primeng/api';
+import { ToadService } from '../../../services/toad.service';
 import { timelessLocalStorageKey } from '../../../constants';
 import { catchError, throwError } from 'rxjs';
 import { Toast } from 'primeng/toast';
@@ -24,7 +24,6 @@ import { Toast } from 'primeng/toast';
   ],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.scss',
-  providers: [MessageService],
 })
 export class SignInComponent {
   private formBuilder = inject(FormBuilder);
@@ -32,7 +31,7 @@ export class SignInComponent {
   constructor(
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
-    private readonly messageService: MessageService,
+    private readonly toad: ToadService,
   ) {}
 
   form = this.formBuilder.group({
@@ -42,12 +41,10 @@ export class SignInComponent {
 
   onSubmit() {
     if (this.form.invalid) {
-      this.messageService.add({
-        key: 'toast',
-        severity: 'error',
-        summary: 'Algo está errado',
-        detail: 'O formulário de login se encontra inválido',
-      });
+      this.toad.error(
+        'Algo está errado',
+        'O formulário de login se encontra inválido',
+      );
       return;
     }
 
@@ -56,13 +53,10 @@ export class SignInComponent {
       .pipe(
         catchError((error) => {
           console.error('Login error:', error);
-          this.messageService.add({
-            key: 'toast',
-            severity: 'error',
-            summary: 'Erro ao fazer login',
-            detail:
-              'Não foi possível fazer login, verifique suas credenciais e tente novamente.',
-          });
+          this.toad.error(
+            'Erro ao fazer login',
+            'Não foi possível fazer login, verifique suas credenciais e tente novamente.',
+          );
           return throwError(() => error);
         }),
       )

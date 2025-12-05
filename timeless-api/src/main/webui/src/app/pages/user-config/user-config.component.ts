@@ -10,8 +10,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { TimelessApiService } from '../../timeless-api.service';
-import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
+import { ToadService } from '../../services/toad.service';
 
 @Component({
   selector: 'app-user-config',
@@ -40,7 +40,7 @@ export class UserConfigComponent {
 
   constructor(
     private readonly timelessApiService: TimelessApiService,
-    private readonly messageService: MessageService,
+    private readonly toad: ToadService,
   ) {
     this.timelessApiService.userInfo().subscribe((response: any) => {
       this.hasPhoneNumber.set(response.hasPhoneNumber);
@@ -61,12 +61,7 @@ export class UserConfigComponent {
     }
 
     this.timelessApiService.updatePhoneNumber(phoneNumber).subscribe((_) => {
-      this.messageService.add({
-        key: 'toast',
-        severity: 'success',
-        summary: 'Tudo certo!',
-        detail: 'Seus dados foram atualizados',
-      });
+      this.toad.success('Tudo certo!', 'Seus dados foram atualizados');
     });
   }
 }

@@ -12,7 +12,8 @@ import { Router, RouterLink } from '@angular/router';
 import { FloatLabel } from 'primeng/floatlabel';
 import { TimelessApiService } from '../../../timeless-api.service';
 import { catchError } from 'rxjs';
-import { MessageService } from 'primeng/api';
+import { ToadService } from '../../../services/toad.service';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-sign-up',
@@ -23,6 +24,7 @@ import { MessageService } from 'primeng/api';
     RouterLink,
     ReactiveFormsModule,
     FloatLabel,
+    Toast,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.scss',
@@ -42,7 +44,7 @@ export class SignUpComponent {
   constructor(
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
-    private readonly messageService: MessageService,
+    private readonly toad: ToadService,
   ) {}
 
   onSubmit() {
@@ -52,12 +54,7 @@ export class SignUpComponent {
         .pipe(
           catchError((err: any) => {
             if (err.error.message) {
-              this.messageService.add({
-                key: 'toast',
-                severity: 'error',
-                summary: 'Conflito',
-                detail: err.error.message,
-              });
+              this.toad.error('Conflito', err.error.message);
             }
             return err;
           }),
