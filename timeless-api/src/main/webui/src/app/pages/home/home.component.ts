@@ -41,6 +41,13 @@ export class HomeComponent {
       icon: PrimeIcons.DOLLAR,
       routerLink: '/home',
     },
+    {
+      id: 'user-config',
+      label: 'Dados Pessoais',
+      styleClass: 'text-sm',
+      icon: PrimeIcons.USER,
+      routerLink: '/home/user-configs',
+    },
   ];
 
   constructor(
