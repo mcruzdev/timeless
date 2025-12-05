@@ -1,11 +1,11 @@
 <form
   [formGroup]="form"
   (ngSubmit)="update()"
-  class="flex flex-col items-center justify-center p-8"
+  class="flex flex-col items-center p-4 md:p-8 w-full"
 >
-  <p-card header="Dados pessoais">
-    <div class="flex flex-col gap-2">
-      <div class="flex flex-row gap-2">
+  <p-card header="Dados pessoais" class="w-full max-w-xl mx-auto">
+    <div class="flex flex-col gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col">
           <label for="firstName">First name</label>
           <input
@@ -13,32 +13,34 @@
             pSize="small"
             id="firstName"
             formControlName="firstName"
+            class="w-full"
           />
         </div>
+
         <div class="flex flex-col">
-          <label for="firstName">Last name</label>
+          <label for="lastName">Last name</label>
           <input
             pInputText
             pSize="small"
             [disabled]="true"
             id="lastName"
             formControlName="lastName"
+            class="w-full"
           />
         </div>
-      </div>
 
-      <div class="flex flex-col">
-        <label for="email">Email</label>
-        <input
-          pInputText
-          pSize="small"
-          [disabled]="true"
-          id="email"
-          formControlName="email"
-        />
-      </div>
+        <div class="flex flex-col md:col-span-2">
+          <label for="email">Email</label>
+          <input
+            pInputText
+            pSize="small"
+            [disabled]="true"
+            id="email"
+            formControlName="email"
+            class="w-full"
+          />
+        </div>
 
-      <div class="flex flex-row gap-2">
         <div class="flex flex-col">
           <label for="password">Password</label>
           <input
@@ -48,17 +50,20 @@
             id="password"
             type="password"
             value="******"
+            class="w-full"
           />
         </div>
 
         <div class="flex flex-col">
-          <label for="firstName">Phone number</label>
+          <label for="phoneNumber">Phone number</label>
           <p-inputmask
             mask="+55 (99) 99999-9999"
             size="small"
             placeholder="+55 (99) 99999-9999"
             formControlName="phoneNumber"
-          />
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          ></p-inputmask>
         </div>
       </div>
     </div>
@@ -69,7 +74,7 @@
         icon="pi pi-save"
         size="small"
         iconPos="left"
-        [style]="{ width: '100%' }"
+        class="w-full"
         type="submit"
         label="Salvar"
       />
@@ -77,4 +82,4 @@
   </p-card>
 </form>
 
-<p-toast position="bottom-right" key="toast"> </p-toast>
+<p-toast position="bottom-right" key="toast"></p-toast>
