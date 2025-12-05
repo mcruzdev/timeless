@@ -45,13 +45,18 @@ Suggestions for improvements are also logged as [GitHub Issues](https://github.c
 
 1. Fork the repository and clone it locally.
 2. Create a branch for your edit: `git checkout -b my-new-feature`.
-3. Make your changes and commit: `git commit -m 'feat: Adds new feature'`.
+3. Make your changes and commit: `git commit -m 'feat: add some feature'`.
 4. Push to the original branch: `git push origin my-new-feature`.
 5. Create a Pull Request.
 
 ### Before Submitting a PR
 
 To ensure your code follows the project's standards and passes the CI pipeline, please run the following commands before submitting your Pull Request.
+
+#### Tests
+
+- We must use assertj library (we use it already in the project) for assertions.
+- The test naming must be `should_expectedBehavior_when_stateUnderTest` example: `should_throwException_when_ageLessThan18`.
 
 #### Backend (Java/Quarkus)
 
