@@ -8,8 +8,11 @@ import { MessageService } from 'primeng/api';
   imports: [RouterOutlet, Toast],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  providers: [MessageService],
+  providers: [],
 })
 export class AppComponent {
+  constructor() {
+    console.log('AppComponent initialized');
+  }
   title = 'timeless';
 }
