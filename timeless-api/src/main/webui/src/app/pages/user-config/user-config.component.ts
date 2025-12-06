@@ -10,8 +10,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { TimelessApiService } from '../../timeless-api.service';
-import { MessageService } from 'primeng/api';
-import { Toast } from 'primeng/toast';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-user-config',
@@ -21,7 +20,6 @@ import { Toast } from 'primeng/toast';
     InputMask,
     FormsModule,
     ReactiveFormsModule,
-    Toast,
     ButtonDirective,
   ],
   templateUrl: './user-config.component.html',
@@ -40,7 +38,7 @@ export class UserConfigComponent {
 
   constructor(
     private readonly timelessApiService: TimelessApiService,
-    private readonly messageService: MessageService,
+    private readonly toast: ToastService,
   ) {
     this.timelessApiService.userInfo().subscribe((response: any) => {
       this.hasPhoneNumber.set(response.hasPhoneNumber);
@@ -61,12 +59,7 @@ export class UserConfigComponent {
     }
 
     this.timelessApiService.updatePhoneNumber(phoneNumber).subscribe((_) => {
-      this.messageService.add({
-        key: 'toast',
-        severity: 'success',
-        summary: 'Tudo certo!',
-        detail: 'Seus dados foram atualizados',
-      });
+      this.toast.success('Tudo certo!', 'Seus dados foram atualizados');
     });
   }
 }
