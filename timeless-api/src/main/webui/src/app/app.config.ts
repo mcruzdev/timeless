@@ -6,6 +6,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import Material from '@primeng/themes/material';
 import { provideHttpClient } from '@angular/common/http';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     provideHttpClient(),
+    MessageService,
   ],
 };
