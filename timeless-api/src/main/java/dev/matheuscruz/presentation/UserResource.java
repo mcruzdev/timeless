@@ -3,6 +3,8 @@ package dev.matheuscruz.presentation;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import io.quarkus.panache.common.Parameters;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
@@ -17,6 +19,7 @@ import org.eclipse.microprofile.jwt.Claims;
 
 @Path("/api/users")
 @RequestScoped
+@Authenticated
 public class UserResource {
 
     @Claim(standard = Claims.upn)
@@ -41,8 +44,7 @@ public class UserResource {
 
         user.addPhoneNumber(req.phoneNumber());
 
-        this.userRepository.update("phoneNumber = :phoneNumber where id = :id",
-                Parameters.with("phoneNumber", req.phoneNumber()).and("id", upn));
+        this.userRepository.persistAndFlush(user);
 
         return Response.ok(user).build();
     }
@@ -50,6 +52,10 @@ public class UserResource {
     @GET
     @Path("/{id}")
     public Response getUserInfo(@PathParam("id") String userId) {
+
+        if (!upn.equals(userId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
 
         User user = this.userRepository.find("id = :id", Parameters.with("id", userId)).firstResultOptional()
                 .orElseThrow(ForbiddenException::new);

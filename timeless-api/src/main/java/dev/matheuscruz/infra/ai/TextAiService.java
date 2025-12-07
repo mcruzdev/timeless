@@ -14,7 +14,8 @@ public interface TextAiService {
 
             1. Extracting financial transaction data.
             2. Responding with the user's current account balance using available tools.
-            3. The user ID is {{userId}}.
+
+            The user ID is {{userId}}.
 
             Your task is to analyze the content between the --- delimiters and return a JSON object in the following format:
 

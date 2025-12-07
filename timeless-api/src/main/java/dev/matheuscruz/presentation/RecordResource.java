@@ -10,7 +10,7 @@ import dev.matheuscruz.domain.UserRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
-import jakarta.annotation.security.RolesAllowed;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -35,7 +35,7 @@ import org.jboss.resteasy.reactive.RestQuery;
 
 @RequestScoped
 @Path("/api/records")
-@RolesAllowed({ "USER" })
+@Authenticated
 public class RecordResource {
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
