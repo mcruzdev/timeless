@@ -11,7 +11,7 @@ const allowedPaths = [
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const path = req.url;
 
-  if (allowedPaths.some(allowedPath => path.startsWith(allowedPath))) {
+  if (allowedPaths.some((allowedPath) => path.startsWith(allowedPath))) {
     return next(req);
   }
 
