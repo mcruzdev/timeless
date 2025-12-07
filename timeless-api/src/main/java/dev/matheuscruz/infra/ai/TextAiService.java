@@ -1,6 +1,7 @@
 package dev.matheuscruz.infra.ai;
 
 import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
 import dev.matheuscruz.infra.ai.data.AllRecognizedOperations;
 import dev.matheuscruz.infra.ai.tools.GetBalanceTool;
 import io.quarkiverse.langchain4j.RegisterAiService;
@@ -10,8 +11,11 @@ public interface TextAiService {
 
     @UserMessage("""
             You are a smart financial assistant capable of performing two types of operations based on the user's message:
+
             1. Extracting financial transaction data.
             2. Responding with the user's current account balance using available tools.
+
+            The user ID is {{userId}}.
 
             Your task is to analyze the content between the --- delimiters and return a JSON object in the following format:
 
@@ -80,6 +84,6 @@ public interface TextAiService {
             {message}
             ---
             """)
-    AllRecognizedOperations handleMessage(String message);
+    AllRecognizedOperations handleMessage(String message, @V("userId") String userId);
 
 }

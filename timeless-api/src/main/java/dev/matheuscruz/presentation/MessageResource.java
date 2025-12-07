@@ -76,7 +76,7 @@ public class MessageResource {
     }
 
     private Response handleMessage(User user, String message) {
-        List<RecognizedOperation> response = aiService.handleMessage(message).all();
+        List<RecognizedOperation> response = aiService.handleMessage(message, user.getId()).all();
         return processOnlyAddTransaction(user, response);
     }
 
