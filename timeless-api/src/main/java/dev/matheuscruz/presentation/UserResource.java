@@ -3,6 +3,7 @@ package dev.matheuscruz.presentation;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import io.quarkus.panache.common.Parameters;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
@@ -11,9 +12,15 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.Claims;
 
 @Path("/api/users")
+@RequestScoped
 public class UserResource {
+
+    @Claim(standard = Claims.upn)
+    String upn;
 
     final UserRepository userRepository;
 
@@ -25,7 +32,11 @@ public class UserResource {
     @Transactional
     public Response update(PatchUserRequest req) {
 
-        User user = this.userRepository.find("id = :id", Parameters.with("id", req.id())).firstResultOptional()
+        if (!upn.equals(req.id())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        User user = this.userRepository.find("id = :id", Parameters.with("id", upn)).firstResultOptional()
                 .orElseThrow(NotFoundException::new);
 
         user.addPhoneNumber(req.phoneNumber());

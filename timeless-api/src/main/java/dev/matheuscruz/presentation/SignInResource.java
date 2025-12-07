@@ -6,6 +6,7 @@ import dev.matheuscruz.infra.security.BCryptAdapter;
 import dev.matheuscruz.infra.security.Groups;
 import io.quarkus.panache.common.Parameters;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.util.Set;
 
 @Path("/api/sign-in")
+@PermitAll
 public class SignInResource {
 
     UserRepository userRepository;
