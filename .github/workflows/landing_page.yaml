@@ -17,9 +17,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@main
         with:
-          aws-access-key-id: ${{ secrets.LANDING_PAGE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.LANDING_PAGE_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.LANDING_PAGE_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.LANDING_PAGE_AWS_SECRET_KEY }}
+          aws-region: sa-east-1
 
       - name: Sync Landing Page to S3
         run: |
