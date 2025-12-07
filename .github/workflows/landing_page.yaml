@@ -1,0 +1,26 @@
+name: Publish Landing Page to Amazon S3
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - site/index.html
+jobs:
+  publish-landing-page:
+    name: Publish Landing Page
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.LANDING_PAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.LANDING_PAGE_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Sync Landing Page to S3
+        run: |
+          aws s3 cp site/index.html s3://${{ secrets.LANDING_PAGE_S3_BUCKET }}/index.html
