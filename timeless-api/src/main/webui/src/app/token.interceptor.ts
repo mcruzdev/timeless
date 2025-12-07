@@ -1,7 +1,20 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { timelessLocalStorageKey } from './constants';
 
+const allowedPaths = [
+  '/api/sign-in',
+  '/api/sign-out',
+  'api/sign-in',
+  'api/sign-out',
+];
+
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
+  const path = req.url;
+
+  if (allowedPaths.includes(path)) {
+    return next(req);
+  }
+
   const data = localStorage.getItem(timelessLocalStorageKey);
 
   if (data == null) {

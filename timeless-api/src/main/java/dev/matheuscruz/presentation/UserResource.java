@@ -41,7 +41,8 @@ public class UserResource {
 
         user.addPhoneNumber(req.phoneNumber());
 
-        this.userRepository.persistAndFlush(user);
+        this.userRepository.update("phoneNumber = :phoneNumber where id = :id",
+                Parameters.with("phoneNumber", req.phoneNumber()).and("id", upn));
 
         return Response.ok(user).build();
     }
