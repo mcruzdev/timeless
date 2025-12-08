@@ -22,7 +22,6 @@
           <input
             pInputText
             pSize="small"
-            [disabled]="true"
             id="lastName"
             formControlName="lastName"
             class="w-full"
@@ -34,7 +33,6 @@
           <input
             pInputText
             pSize="small"
-            [disabled]="true"
             id="email"
             formControlName="email"
             class="w-full"
@@ -66,7 +64,7 @@
           ></p-inputmask>
         </div>
 
-        <div class="md:col-span-2">
+        <div class="flex gap-4 md:col-span-2 justify-center">
           <button
             pButton
             severity="contrast"
@@ -74,6 +72,17 @@
             size="small"
             type="submit"
             label="Salvar"
+          ></button>
+
+          <button
+            class="ml-2"
+            pButton
+            severity="contrast"
+            icon="pi pi-pencil"
+            size="small"
+            type="button"
+            label="Alterar Dados"
+            (click)="toggleEdit()"
           ></button>
         </div>
       </div>

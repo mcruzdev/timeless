@@ -28,7 +28,7 @@ public class UserResource {
         User user = this.userRepository.find("id = :id", Parameters.with("id", req.id())).firstResultOptional()
                 .orElseThrow(NotFoundException::new);
 
-        user.addPhoneNumber(req.phoneNumber());
+        user.update(req.firstName(), req.lastName(), req.email(), req.phoneNumber());
 
         this.userRepository.persistAndFlush(user);
 
@@ -46,7 +46,7 @@ public class UserResource {
                 user.getFirstName(), user.getLastName(), user.getPhoneNumber() != null)).build();
     }
 
-    public record PatchUserRequest(String phoneNumber, String id) {
+    public record PatchUserRequest(String firstName, String lastName, String email, String phoneNumber, String id) {
     }
 
     public record UserInfoResponse(String id, String email, String phoneNumber, String firstName, String lastName,

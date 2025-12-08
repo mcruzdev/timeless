@@ -37,6 +37,13 @@ public class User {
                 Objects.requireNonNull(firstName), Objects.requireNonNull(lastName));
     }
 
+    public void update(String firstName, String lastName, String email, String phoneNumber) {
+        this.firstName = Objects.requireNonNull(firstName);
+        this.lastName = Objects.requireNonNull(lastName);
+        this.email = Objects.requireNonNull(email);
+        this.phoneNumber = Objects.requireNonNull(phoneNumber);
+    }
+
     protected User() {
     }
 
