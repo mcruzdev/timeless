@@ -38,9 +38,7 @@ export class SignUpComponent {
     ],
     firstName: ['', [Validators.required, Validators.minLength(1)]],
     lastName: ['', [Validators.required, Validators.minLength(1)]],
-    phoneNumber: ['',[Validators.required,Validators.pattern(this.regex)]
-],
-
+    phoneNumber: ['', [Validators.required, Validators.pattern(this.regex)]],
   });
 
   constructor(
