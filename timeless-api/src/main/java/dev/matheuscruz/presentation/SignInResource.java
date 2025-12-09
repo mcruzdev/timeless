@@ -41,13 +41,12 @@ public class SignInResource {
         String token = Jwt.upn(user.getId()).groups(Set.of(Groups.USER.groupName())).expiresIn(Duration.ofDays(1))
                 .sign();
 
-        return Response.ok(new SignInResponse(token, user.getId(), user.fullName(), req.email(), user.hasPhoneNumber()))
-                .build();
+        return Response.ok(new SignInResponse(token, user.getId(), user.fullName(), req.email())).build();
     }
 
     public record SignInRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password) {
     }
 
-    public record SignInResponse(String token, String id, String name, String email, Boolean hasPhoneNumber) {
+    public record SignInResponse(String token, String id, String name, String email) {
     }
 }

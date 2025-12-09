@@ -29,6 +29,7 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class SignUpComponent {
   formBuilder = inject(FormBuilder);
+  regex = /^\+?\d{1,3}?[\s-]?\(?\d{1,4}\)?([\s-]?\d{2,4}){1,3}$/;
   form: FormGroup = this.formBuilder.group({
     email: ['', [Validators.email, Validators.required]],
     password: [
@@ -37,6 +38,9 @@ export class SignUpComponent {
     ],
     firstName: ['', [Validators.required, Validators.minLength(1)]],
     lastName: ['', [Validators.required, Validators.minLength(1)]],
+    phoneNumber: ['',[Validators.required,Validators.pattern(this.regex)]
+],
+
   });
 
   constructor(

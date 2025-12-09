@@ -36,7 +36,8 @@ public class SignUpResource {
                     .entity(new Problem("Este nome de usuário já foi usado. Tente outro.")).build();
         }
 
-        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName());
+        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName(),
+                req.phoneNumber());
 
         QuarkusTransaction.requiringNew().run(() -> {
             this.userRepository.persist(user);
@@ -47,7 +48,7 @@ public class SignUpResource {
     }
 
     public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password,
-            @NotBlank String firstName, @NotBlank String lastName) {
+            @NotBlank String firstName, @NotBlank String lastName, @NotBlank String phoneNumber) {
     }
 
     public record SignUpResponse(String id, String email) {

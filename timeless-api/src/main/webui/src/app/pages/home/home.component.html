@@ -32,16 +32,5 @@
 />
 
 <main class="flex flex-col justify-center w-12/12 h-full p-8">
-  @if (!hasPhoneNumber()) {
-    <p-message [life]="5000" variant="text" closable styleClass="gap-2 p-2">
-      <p class="text-sm font-normal">
-        Verificamos que você não tem um número de telefone cadastrado,
-        cadastre-o para ter acesso ao bot via WhatsApp. <br />
-        <a [routerLink]="['/home/user-configs']" class="text-white"
-          >Cadastre seu telefone aqui.</a
-        >
-      </p>
-    </p-message>
-  }
   <router-outlet></router-outlet>
 </main>
