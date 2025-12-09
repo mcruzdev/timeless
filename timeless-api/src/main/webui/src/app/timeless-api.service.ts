@@ -37,7 +37,7 @@ export class TimelessApiService {
     }
 
     const user = JSON.parse(data);
-    return this.httpClient.patch('/api/users', {
+    return this.httpClient.put('/api/users', {
       id: user.id,
       firstName: updateUser.firstName,
       lastName: updateUser.lastName,
