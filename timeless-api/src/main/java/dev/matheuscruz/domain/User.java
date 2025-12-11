@@ -32,20 +32,22 @@ public class User {
     @Column(unique = true, name = "phone_number")
     private String phoneNumber;
 
-    public static User create(String email, String password, String firstName, String lastName) {
+    public static User create(String email, String password, String firstName, String lastName, String phoneNumber) {
         return new User(Objects.requireNonNull(email), Objects.requireNonNull(password),
-                Objects.requireNonNull(firstName), Objects.requireNonNull(lastName));
+                Objects.requireNonNull(firstName), Objects.requireNonNull(lastName),
+                Objects.requireNonNull(phoneNumber));
     }
 
     protected User() {
     }
 
-    private User(String email, String password, String firstName, String lastName) {
+    private User(String email, String password, String firstName, String lastName, String phoneNumber) {
         this.id = UUID.randomUUID().toString();
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
     }
 
     public String getId() {
@@ -78,9 +80,5 @@ public class User {
 
     public void addPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public Boolean hasPhoneNumber() {
-        return this.phoneNumber != null;
     }
 }
