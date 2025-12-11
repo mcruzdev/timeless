@@ -60,7 +60,7 @@ jobs:
           CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
 
   whatsapp:
-    name: Lint - WhatsApp
+    name: Build & Publish - WhatsApp
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -82,5 +82,4 @@ jobs:
 
       - name: Check code formatting with Prettier
         run: npm run prettier:check
-
 
