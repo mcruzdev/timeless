@@ -30,16 +30,19 @@ export class TimelessApiService {
     });
   }
 
-  updatePhoneNumber(phoneNumber: string) {
+  updateUser(updateUser: UpdateUser) {
     const data = localStorage.getItem(timelessLocalStorageKey);
     if (data == null) {
       throw new Error();
     }
 
     const user = JSON.parse(data);
-    return this.httpClient.patch('/api/users', {
+    return this.httpClient.put('/api/users', {
       id: user.id,
-      phoneNumber: phoneNumber.replace(notNumbers, ''),
+      firstName: updateUser.firstName,
+      lastName: updateUser.lastName,
+      email: updateUser.email,
+      phoneNumber: (updateUser.phoneNumber || '').replace(notNumbers, ''),
     });
   }
 
@@ -77,4 +80,12 @@ export interface RecordResponseItem {
   description: string;
   transaction: string;
   createdAt: string;
+}
+
+export interface UpdateUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
 }

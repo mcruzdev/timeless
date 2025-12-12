@@ -29,6 +29,7 @@ export class UserConfigComponent {
   formBuilder = inject(FormBuilder);
 
   hasPhoneNumber = signal<boolean>(true);
+  isEditing = signal<boolean>(false);
   form = this.formBuilder.group({
     email: new FormControl({ value: '', disabled: true }),
     firstName: new FormControl({ value: '', disabled: true }),
@@ -51,16 +52,35 @@ export class UserConfigComponent {
     });
   }
 
-  update() {
-    const phoneNumber = this.form.value.phoneNumber;
+  toggleEdit() {
+    this.isEditing.update((value) => !value);
+    if (this.isEditing()) {
+      this.form.enable();
+    } else {
+      this.form.disable();
+    }
+  }
 
-    if (!phoneNumber) {
+  update() {
+    if (this.form.invalid) {
       return;
     }
 
-    this.timelessApiService.updatePhoneNumber(phoneNumber).subscribe((_) => {
-      this.toast.success('Tudo certo!', 'Seus dados foram atualizados');
-    });
+    const { firstName, lastName, email, phoneNumber } = this.form.getRawValue();
+
+    this.timelessApiService
+      .updateUser({
+        id: '',
+        firstName: firstName || '',
+        lastName: lastName || '',
+        email: email || '',
+        phoneNumber: phoneNumber || '',
+      })
+      .subscribe((_) => {
+        this.toast.success('Tudo certo!', 'Seus dados foram atualizados');
+        this.isEditing.set(false);
+        this.form.disable();
+      });
   }
 }
 
