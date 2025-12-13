@@ -54,9 +54,9 @@ jobs:
       - name: Ensure Maven wrapper is executable
         run: chmod +x mvnw
 
-      - name: Set up Docker
-        uses: docker/setup-docker-action@v4
-        id: docker
+      - name: Set up Podman
+        uses: gacts/install-podman@v1
+        id: podman
 
       - name: Login to Quay.io
         uses: docker/login-action@v3
