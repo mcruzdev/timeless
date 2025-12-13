@@ -2,6 +2,8 @@
 
 Do you often make purchases and forget to write them down? **Timeless** is a project designed to help you by automatically detecting purchase-related messages on WhatsApp and registering that data in the **Timeless** app — your personal financial organization hub.
 
+See our landing page: [**https://timeless.platformoon.com**](https://timeless.platformoon.com)
+
 ## ✨ Overview
 
 This application monitors WhatsApp messages for signs of purchases (such as receipts, audio messages, transfers), extracts relevant information (amounts, descriptions), and automatically sends it to **Timeless**, helping you keep your finances organized — effortlessly.

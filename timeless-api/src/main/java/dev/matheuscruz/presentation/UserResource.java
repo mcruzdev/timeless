@@ -7,7 +7,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
@@ -21,14 +21,14 @@ public class UserResource {
         this.userRepository = userRepository;
     }
 
-    @PATCH
+    @PUT
     @Transactional
-    public Response update(PatchUserRequest req) {
+    public Response update(UpdateUserRequest req) {
 
         User user = this.userRepository.find("id = :id", Parameters.with("id", req.id())).firstResultOptional()
                 .orElseThrow(NotFoundException::new);
 
-        user.addPhoneNumber(req.phoneNumber());
+        user.update(req.firstName(), req.lastName(), req.email(), req.phoneNumber());
 
         this.userRepository.persistAndFlush(user);
 
@@ -46,7 +46,7 @@ public class UserResource {
                 user.getFirstName(), user.getLastName(), user.getPhoneNumber() != null)).build();
     }
 
-    public record PatchUserRequest(String phoneNumber, String id) {
+    public record UpdateUserRequest(String firstName, String lastName, String email, String phoneNumber, String id) {
     }
 
     public record UserInfoResponse(String id, String email, String phoneNumber, String firstName, String lastName,

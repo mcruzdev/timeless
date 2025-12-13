@@ -36,7 +36,8 @@ public class SignUpResource {
                     .entity(new Problem("Este nome de usuário já foi usado. Tente outro.")).build();
         }
 
-        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName());
+        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName(),
+                req.phoneNumber());
 
         QuarkusTransaction.requiringNew().run(() -> {
             this.userRepository.persist(user);
