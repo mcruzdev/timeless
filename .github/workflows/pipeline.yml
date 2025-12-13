@@ -66,7 +66,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build with unit and integration tests
-        run: mvn -B -ntp formatter:validate impsort:check package -Dquarkus.container-image.build=true -Dquarkus.container-image.push=true -Dquarkus.container-image.registry=quay.io -Dquarkus.container-image.group=timeless -Dquarkus.container-image.name=timeless-api -Dquarkus.container-image.tag=${{ github.sha }} -Dquarkus.buildpack.docker-socket=${{ steps.docker.outputs.sock }} -Dquarkus.buildpack.docker-host=${{ steps.docker.outputs.tcp }}
+        run: mvn -B -ntp formatter:validate impsort:check package -Dquarkus.container-image.build=true -Dquarkus.container-image.registry=quay.io -Dquarkus.container-image.group=timeless -Dquarkus.container-image.name=timeless-api -Dquarkus.container-image.tag=${{ github.sha }}
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
 
