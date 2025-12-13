@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./timeless-api        
+        working-directory: timeless-api        
 
     steps:
       - name: Checkout
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./whatsapp
+        working-directory: whatsapp
 
     steps:
       - name: Checkout
