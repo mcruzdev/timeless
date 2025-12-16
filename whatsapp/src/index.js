@@ -10,9 +10,6 @@ require("dotenv").config({
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
 const crypto = require("crypto")
-const OpenAI = require("openai")
-const fs = require("fs")
-const { tmpdir } = require("os")
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3")
 const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs")
 const { Consumer } = require("sqs-consumer")
@@ -48,10 +45,6 @@ const sqsClient = new SQSClient({
     region: AWS_REGION,
     credentials: awsCredentials,
     ...additionalConfigs,
-})
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
 })
 
 const mimetypeFileMap = {
@@ -119,10 +112,6 @@ client.on("message", async (message) => {
         await handleTextMessage(message, sender)
     }
 })
-
-function generateSimpleAudioName() {
-    return `${crypto.randomUUID().toLowerCase()}.mp3`
-}
 
 /**
  *
@@ -194,53 +183,56 @@ async function handleImageMessage(message, media) {
     }
 }
 
+const fs = require("fs")
+const { tmpdir } = require("os")
+const ffmpeg = require("fluent-ffmpeg")
+const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path
+
+ffmpeg.setFfmpegPath(ffmpegPath)
+
 /**
  *
  * @param {WAWebJS.Message} message
  * @param {WAWebJS.MessageMedia} media
  */
 async function handleAudioMessage(message, media) {
-    const buffer = Buffer.from(media.data, "base64")
     const contact = await message.getContact()
-    const audioPath = path.join(tmpdir(), generateSimpleAudioName())
-    let transcription
+    const chat = await message.getChat()
+
+    const tempInput = path.join(tmpdir(), `${crypto.randomUUID()}.ogg`)
+    const tempOutput = path.join(tmpdir(), `${crypto.randomUUID()}.mp3`)
 
     try {
-        fs.writeFileSync(audioPath, buffer)
-        transcription = await openai.audio.transcriptions.create({
-            file: fs.createReadStream(audioPath),
-            model: "whisper-1",
-            response_format: "verbose_json",
+        await new Promise((resolve, reject) => {
+            fs.writeFileSync(tempInput, Buffer.from(media.data, "base64"))
+            ffmpeg(tempInput)
+                .toFormat("mp3")
+                .on("end", resolve)
+                .on("error", reject)
+                .save(tempOutput)
         })
-    } catch (error) {
-        console.error("error while getting transcription from OpenAI", error)
-    } finally {
-        fs.rmSync(audioPath, { force: true, maxRetries: 3 })
-    }
 
-    if (!transcription) {
-        await message.reply("Não foi possível transcrever o seu áudio")
-        return
-    }
+        const convertedBase64 = fs.readFileSync(tempOutput, {
+            encoding: "base64",
+        })
 
-    try {
-        const { data } = await timelessApiClient.post("/api/messages", {
+        const { data } = await timelessApiClient.post("/api/messages/audio", {
             from: contact.id.user,
-            message: transcription.text,
+            base64: convertedBase64,
         })
-        const chat = await message.getChat()
-
-        const content = JSON.parse(data.content)
 
         await sendRecordResult(chat, {
-            amount: content.amount,
-            description: content.description,
-            type: content.type,
-            withError: content.withError,
+            amount: data.amount,
+            description: data.description,
+            type: data.type,
+            withError: data.withError,
         })
     } catch (err) {
         console.error(err)
         await chat.sendMessage(messages.sorryNotRegistered)
+    } finally {
+        if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput)
+        if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput)
     }
 }
 
