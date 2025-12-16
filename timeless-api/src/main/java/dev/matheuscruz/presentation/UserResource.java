@@ -3,6 +3,7 @@ package dev.matheuscruz.presentation;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import io.quarkus.panache.common.Parameters;
+import io.quarkus.security.Authenticated;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
@@ -13,6 +14,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/users")
+@Authenticated
 public class UserResource {
 
     final UserRepository userRepository;
