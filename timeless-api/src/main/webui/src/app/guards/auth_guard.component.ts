@@ -8,28 +8,33 @@ import {
   UrlTree,
 } from '@angular/router';
 import { timelessLocalStorageKey } from '../constants';
+import { TimelessApiService } from '../timeless-api.service';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate, CanActivateChild {
-  constructor(private readonly router: Router) {}
-
-  private isLogged(): boolean {
-    return localStorage.getItem(timelessLocalStorageKey) != null;
-  }
+  constructor(
+    private readonly router: Router,
+    private readonly apiService: TimelessApiService,
+  ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
-  ): boolean | UrlTree {
-    if (this.isLogged()) return true;
-
-    return this.router.createUrlTree(['/']);
+  ): Observable<boolean | UrlTree> {
+    return this.apiService.userInfo().pipe(
+      map(() => true),
+      catchError(() => {
+        return of(this.router.createUrlTree(['/']));
+      }),
+    );
   }
 
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
-  ): boolean | UrlTree {
+  ): Observable<boolean | UrlTree> {
     return this.canActivate(childRoute, state);
   }
 }

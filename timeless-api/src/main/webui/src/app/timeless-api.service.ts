@@ -51,7 +51,11 @@ export class TimelessApiService {
       throw new Error();
     }
     const user = JSON.parse(data);
-    return this.httpClient.get(`/api/users/${user.id}`);
+    return this.httpClient.get(`/api/users/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    });
   }
 
   deleteRecord(id: number) {
