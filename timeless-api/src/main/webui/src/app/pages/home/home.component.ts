@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { TimelessApiService } from '../../timeless-api.service';
 import { timelessLocalStorageKey } from '../../constants';
@@ -22,11 +22,10 @@ import { Message } from 'primeng/message';
     AvatarModule,
     TableModule,
     TagModule,
-    CommonModule,
     RouterModule,
     Menubar,
-    Message,
-  ],
+    Message
+],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
