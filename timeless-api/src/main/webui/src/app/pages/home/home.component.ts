@@ -11,7 +11,6 @@ import { TimelessApiService } from '../../timeless-api.service';
 import { timelessLocalStorageKey } from '../../constants';
 import { Menubar } from 'primeng/menubar';
 import { MenuItem, PrimeIcons } from 'primeng/api';
-import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-home',
@@ -23,8 +22,7 @@ import { Message } from 'primeng/message';
     TableModule,
     TagModule,
     RouterModule,
-    Menubar,
-    Message
+    Menubar
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
