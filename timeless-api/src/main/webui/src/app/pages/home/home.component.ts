@@ -22,8 +22,8 @@ import { MenuItem, PrimeIcons } from 'primeng/api';
     TableModule,
     TagModule,
     RouterModule,
-    Menubar
-],
+    Menubar,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
