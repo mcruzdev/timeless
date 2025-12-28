@@ -103,7 +103,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Install pack CLI
-        uses: buildpacks/github-actions/setup-pack@v5
+        uses: buildpacks/github-actions/setup-pack@v5.10.0
 
       - name: Build and publish WhatsApp image with Buildpacks
         run: |
