@@ -1,7 +1,7 @@
 api = "0.9"
 
 [buildpack]
-id = "mcruzdev/chromium"
+id = "dev.matheuscruz.buildpack.chromium"
 version = "0.0.1"
 name = "Chromium Buildpack"
 
