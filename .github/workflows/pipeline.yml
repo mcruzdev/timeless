@@ -66,10 +66,10 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Create Docker image
-        run: docker build -f src/main/docker/Dockerfile.jvm -t quay.io/${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7} .
+        run: docker build -f src/main/docker/Dockerfile.jvm -t quay.io/timeless/timeless-api:${GITHUB_SHA::7} .
 
       - name: Push Docker image to Quay.io
-        run: docker push ${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7}
+        run: docker push timeless/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
     name: Build & Publish - WhatsApp
@@ -82,15 +82,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: whatsapp/package-lock.json
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Check code formatting with Prettier
         run: npm run prettier:check
@@ -108,7 +108,7 @@ jobs:
       - name: Build and publish WhatsApp image with Buildpacks
         run: |
           pack build quay.io/timeless/whatsapp:${{ github.sha }} \
-            --path whatsapp \
+            --path . \
             --builder paketobuildpacks/builder-jammy-base \
             --buildpack paketo-community/apt \
             --buildpack paketo-buildpacks/nodejs \
