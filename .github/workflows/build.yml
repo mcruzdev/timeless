@@ -1,4 +1,4 @@
-name: Timeless CI
+name: Timeless CI - Build & Publish
 
 on:
   push:
@@ -106,7 +106,7 @@ jobs:
         uses: buildpacks/github-actions/setup-pack@v5.10.0
 
       - name: Allow executing Chromium Buildpack
-        run: chmod +x chromium-buildpack/bin/build
+        run: chmod +x ./chromium-buildpack/bin/build
 
       - name: Build and publish WhatsApp image with Buildpacks
         run: |
