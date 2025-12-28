@@ -72,7 +72,7 @@ jobs:
         run: docker push quay.io/timeless/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
-    name: Build & Publish - WhatsApp
+    name: Build & Publish - WhatsApp Bot (Node.js)
     runs-on: ubuntu-latest
     defaults:
       run:
