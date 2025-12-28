@@ -1,0 +1,9 @@
+api = "0.9"
+
+[buildpack]
+id = "mcruzdev/chromium"
+version = "0.0.1"
+name = "Chromium Buildpack"
+
+[[stacks]]
+id = "io.buildpacks.stacks.jammy"
