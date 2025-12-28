@@ -32,6 +32,9 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Build API
+        run: mvn -B -ntp formatter:validate impsort:check package
+
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -65,10 +68,11 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Build with unit and integration tests
-        run: mvn -B -ntp formatter:validate impsort:check package -Dquarkus.container-image.build=true -Dquarkus.container-image.registry=quay.io -Dquarkus.container-image.group=timeless -Dquarkus.container-image.name=timeless-api -Dquarkus.container-image.tag=${{ github.sha }}
-        env:
-          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+      - name: Create Docker image
+        run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7} .
+
+      - name: Push Docker image to Quay.io
+        run: docker push ${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
     name: Build & Publish - WhatsApp
