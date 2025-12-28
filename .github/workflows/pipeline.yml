@@ -110,6 +110,6 @@ jobs:
           pack build quay.io/timeless/whatsapp:${{ github.sha }} \
             --path . \
             --builder paketobuildpacks/builder-jammy-base \
-            --buildpack paketo-community/apt \
+            --buildpack heroku-community/chrome-for-testing \
             --buildpack paketo-buildpacks/nodejs \
             --publish
