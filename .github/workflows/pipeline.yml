@@ -35,10 +35,10 @@ jobs:
       - name: Build API
         run: mvn -B -ntp formatter:validate impsort:check package
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: timeless-api/src/main/webui/package-lock.json
 
@@ -54,9 +54,6 @@ jobs:
         working-directory: ./timeless-api/src/main/webui
         run: npm run prettier:check
 
-      - name: Ensure Maven wrapper is executable
-        run: chmod +x mvnw
-
       - name: Set up Podman
         uses: gacts/install-podman@v1
         id: podman
@@ -69,7 +66,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Create Docker image
-        run: docker build -f src/main/docker/Dockerfile.jvm -t ${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7} .
+        run: docker build -f src/main/docker/Dockerfile.jvm -t quay.io/${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7} .
 
       - name: Push Docker image to Quay.io
         run: docker push ${{ secrets.QUAY_USERNAME }}/timeless-api:${GITHUB_SHA::7}
@@ -93,7 +90,7 @@ jobs:
           cache-dependency-path: whatsapp/package-lock.json
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Check code formatting with Prettier
         run: npm run prettier:check
