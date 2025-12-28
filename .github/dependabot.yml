@@ -10,6 +10,8 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    allow:
+      - dependency-type: "direct"
 
   - package-ecosystem: maven
     directory: /timeless-api
@@ -32,3 +34,5 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    allow:
+      - dependency-type: "direct"

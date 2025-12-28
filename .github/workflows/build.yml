@@ -105,11 +105,14 @@ jobs:
       - name: Install pack CLI
         uses: buildpacks/github-actions/setup-pack@v5.10.0
 
+      - name: Allow executing Chromium Buildpack
+        run: chmod +x chromium-buildpack/bin/build
+
       - name: Build and publish WhatsApp image with Buildpacks
         run: |
           pack build quay.io/timeless/whatsapp:${GITHUB_SHA::7} \
             --path . \
             --builder paketobuildpacks/builder-jammy-base \
-            --buildpack https://github.com/heroku/heroku-buildpack-chrome-for-testing/archive/refs/tags/1.0.8.tar.gz \
+            --buildpack ./chromium-buildpack \
             --buildpack paketo-buildpacks/nodejs \
             --publish
