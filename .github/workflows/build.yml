@@ -106,6 +106,7 @@ jobs:
         uses: buildpacks/github-actions/setup-pack@v5.10.0
 
       - name: Allow executing Chromium Buildpack
+        working-directory: whatsapp
         run: chmod +x ./chromium-buildpack/bin/build
 
       - name: Build and publish WhatsApp image with Buildpacks
