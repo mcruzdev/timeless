@@ -8,6 +8,29 @@ See our landing page: [**https://timeless.platformoon.com**](https://timeless.pl
 
 This application monitors WhatsApp messages for signs of purchases (such as receipts, audio messages, transfers), extracts relevant information (amounts, descriptions), and automatically sends it to **Timeless**, helping you keep your finances organized — effortlessly.
 
+## Project Intent
+
+Great choice. Option 1 strikes a perfect balance between professional transparency and the "builder" mindset.
+
+Here is how your updated README would look with the disclaimer integrated. I've placed it right after the Overview to establish the project's purpose early on.
+
+🕰️ Timeless
+Do you often make purchases and forget to write them down? Timeless is a project designed to help you by automatically detecting purchase-related messages on WhatsApp and registering that data in the Timeless app — your personal financial organization hub.
+
+See our landing page: https://timeless.platformoon.com
+
+✨ Overview
+This application monitors WhatsApp messages for signs of purchases (such as receipts, audio messages, transfers), extracts relevant information (amounts, descriptions), and automatically sends it to Timeless, helping you keep your finances organized — effortlessly.
+
+⚠️ Project Intent
+Timeless is primarily an educational project built to explore the intersection of automated messaging, NLP, and cloud infrastructure. While it mimics real-world financial tracking systems, its core goal is to demonstrate:
+
+**Production-like Architecture**: Integrating Java/Quarkus with AI and external messaging APIs.
+
+**Continuous Improvement**: The codebase is designed to evolve. We encourage experiments with local LLMs and different cloud providers.
+
+**Learning by Doing**: This is a sandbox for implementing "real-world" logic in a controlled environment. Feel free to refactor, break, and improve!
+
 ## 🚀 Features
 
 - 📩 Automatic reading of WhatsApp messages
