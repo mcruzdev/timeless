@@ -31,7 +31,6 @@ import { InputMask } from 'primeng/inputmask';
 })
 export class SignUpComponent {
   formBuilder = inject(FormBuilder);
-  regex = /^\+?\d{1,3}?[\s-]?\(?\d{1,4}\)?([\s-]?\d{2,4}){1,3}$/;
   form: FormGroup = this.formBuilder.group({
     email: ['', [Validators.email, Validators.required]],
     password: [
@@ -40,14 +39,14 @@ export class SignUpComponent {
     ],
     firstName: ['', [Validators.required, Validators.minLength(1)]],
     lastName: ['', [Validators.required, Validators.minLength(1)]],
-    phoneNumber: ['', [Validators.required, Validators.pattern(this.regex)]],
+    phoneNumber: ['', [Validators.required]],
   });
 
   constructor(
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
     private readonly toast: ToastService,
-  ) { }
+  ) {}
 
   onSubmit() {
     if (this.form.valid) {
