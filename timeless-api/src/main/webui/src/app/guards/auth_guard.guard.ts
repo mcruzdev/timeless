@@ -7,7 +7,6 @@ import {
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
-import { timelessLocalStorageKey } from '../constants';
 import { TimelessApiService } from '../timeless-api.service';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
