@@ -3,6 +3,8 @@ name: Timeless CI - Build & Publish
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 
 permissions:
@@ -14,7 +16,6 @@ concurrency:
 
 jobs:
   timeless-api:
-    if: github.repository == 'mcruzdev/timeless'
     name: Build & Publish - Timeless API (Java)
     runs-on: ubuntu-latest
     defaults:
@@ -59,6 +60,7 @@ jobs:
         id: podman
 
       - name: Login to Quay.io
+        if: github.repository == 'mcruzdev/timeless'
         uses: docker/login-action@v3
         with:
           registry: quay.io
@@ -66,13 +68,14 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Create Docker image
+        if: github.repository == 'mcruzdev/timeless'
         run: docker build -f src/main/docker/Dockerfile.jvm -t quay.io/timeless/timeless-api:${GITHUB_SHA::7} .
 
       - name: Push Docker image to Quay.io
+        if: github.repository == 'mcruzdev/timeless'
         run: docker push quay.io/timeless/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
-    if: github.repository == 'mcruzdev/timeless'
     name: Build & Publish - WhatsApp Bot (Node.js)
     runs-on: ubuntu-latest
     defaults:
@@ -98,6 +101,7 @@ jobs:
 
       - name: Login to Quay.io
         if: false # Disabled for now: we need to add chrome to the buildpack image first
+        if: github.repository == 'mcruzdev/timeless'
         uses: docker/login-action@v3
         with:
           registry: quay.io
@@ -106,10 +110,12 @@ jobs:
 
       - name: Install pack CLI
         if: false # Disabled for now: we need to add chrome to the buildpack image first
+        if: github.repository == 'mcruzdev/timeless'
         uses: buildpacks/github-actions/setup-pack@v5.10.0
 
       - name: Build and publish WhatsApp image with Buildpacks
-        if: false # Disabled for now: we need to add chrome to the buildpack image first 
+        if: false # Disabled for now: we need to add chrome to the buildpack image first
+        if: github.repository == 'mcruzdev/timeless' 
         run: |
           pack build quay.io/timeless/whatsapp:${GITHUB_SHA::7} \
             --path . \
