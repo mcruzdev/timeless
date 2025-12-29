@@ -3,8 +3,7 @@ name: Timeless CI - Build & Publish
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+
 
 permissions:
   contents: read
@@ -15,6 +14,7 @@ concurrency:
 
 jobs:
   timeless-api:
+    if: github.repository == 'mcruzdev/timeless'
     name: Build & Publish - Timeless API (Java)
     runs-on: ubuntu-latest
     defaults:
@@ -72,6 +72,7 @@ jobs:
         run: docker push quay.io/timeless/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
+    if: github.repository == 'mcruzdev/timeless'
     name: Build & Publish - WhatsApp Bot (Node.js)
     runs-on: ubuntu-latest
     defaults:
