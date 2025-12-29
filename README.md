@@ -12,11 +12,9 @@ This application monitors WhatsApp messages for signs of purchases (such as rece
 
 Timeless is primarily an educational project built to explore the intersection of automated messaging, NLP, and cloud infrastructure. While it mimics real-world financial tracking systems, its core goal is to demonstrate:
 
-**Production-like Architecture**: Integrating Java/Quarkus with AI and external messaging APIs.
-
-**Continuous Improvement**: The codebase is designed to evolve. We encourage experiments with local LLMs and different cloud providers.
-
-**Learning by Doing**: This is a sandbox for implementing "real-world" logic in a controlled environment. Feel free to refactor, break, and improve!
+* **Production-like Architecture**: Integrating Java/Quarkus with AI and external messaging APIs.
+* **Continuous Improvement**: The codebase is designed to evolve. We encourage experiments with local LLMs and different cloud providers.
+* **Learning by Doing**: This is a sandbox for implementing "real-world" logic in a controlled environment. Feel free to refactor, break, and improve!
 
 ## 🚀 Features
 
