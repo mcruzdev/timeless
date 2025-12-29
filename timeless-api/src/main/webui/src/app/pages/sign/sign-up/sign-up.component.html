@@ -2,78 +2,33 @@
   Olá, <span class="font-bold">Timeless</span> 🕰
 </h1>
 
-<form
-  [formGroup]="form"
-  (ngSubmit)="onSubmit()"
-  class="flex flex-col w-[300px] gap-2"
->
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col w-[300px] gap-2">
   <p-float-label variant="in">
-    <input
-      id="first_name"
-      class="w-full text-center font-medium"
-      type="text"
-      pSize="small"
-      pInputText
-      formControlName="firstName"
-      autocomplete="false"
-    />
+    <input id="first_name" class="w-full text-center font-medium" type="text" pSize="small" pInputText
+      formControlName="firstName" autocomplete="false" />
     <label for="first_name">Seu primeiro nome</label>
   </p-float-label>
   <p-float-label variant="in">
-    <input
-      id="last_name"
-      class="w-full text-center font-medium"
-      type="text"
-      pSize="small"
-      pInputText
-      formControlName="lastName"
-      autocomplete="false"
-    />
+    <input id="last_name" class="w-full text-center font-medium" type="text" pSize="small" pInputText
+      formControlName="lastName" autocomplete="false" />
     <label for="last_name">Seu último nome</label>
   </p-float-label>
   <p-float-label variant="in">
-    <input
-      id="email"
-      class="w-full text-center font-medium"
-      type="text"
-      pSize="small"
-      pInputText
-      formControlName="email"
-      autocomplete="false"
-    />
+    <input id="email" class="w-full text-center font-medium" type="text" pSize="small" pInputText
+      formControlName="email" autocomplete="false" />
     <label for="email">Seu melhor e-mail</label>
   </p-float-label>
   <p-float-label variant="in">
-    <input
-      id="phone_number"
-      class="w-full text-center font-medium"
-      type="text"
-      pSize="small"
-      pInputText
-      formControlName="phoneNumber"
-      autocomplete="false"
-    />
+    <p-inputMask id="phone_number" styleClass="w-full text-center font-medium" mask="(99) 99999-9999"
+      formControlName="phoneNumber" autocomplete="off" [showClear]="true" />
     <label for="phone_number">Seu número de telefone</label>
   </p-float-label>
   <p-float-label variant="in">
-    <input
-      id="password"
-      class="w-full text-center font-medium"
-      type="password"
-      pSize="small"
-      pInputText
-      formControlName="password"
-      autocomplete="false"
-    />
+    <input id="password" class="w-full text-center font-medium" type="password" pSize="small" pInputText
+      formControlName="password" autocomplete="false" />
     <label for="password">Sua senha</label>
   </p-float-label>
-  <p-button
-    type="submit"
-    [style]="{ width: '100%' }"
-    label="Cadastrar"
-    severity="primary"
-    size="small"
-  ></p-button>
+  <p-button type="submit" [style]="{ width: '100%' }" label="Cadastrar" severity="primary" size="small"></p-button>
   <p class="text-xs text-center font-extralight">
     Já possui uma conta? Clique
     <a [routerLink]="['']" class="primary-emphasis font-normal">aqui</a>

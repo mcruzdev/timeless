@@ -13,6 +13,7 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { TimelessApiService } from '../../../timeless-api.service';
 import { catchError } from 'rxjs';
 import { ToastService } from '../../../services/toast.service';
+import { InputMask } from 'primeng/inputmask';
 
 @Component({
   selector: 'app-sign-up',
@@ -23,6 +24,7 @@ import { ToastService } from '../../../services/toast.service';
     RouterLink,
     ReactiveFormsModule,
     FloatLabel,
+    InputMask,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.scss',
@@ -45,7 +47,7 @@ export class SignUpComponent {
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
     private readonly toast: ToastService,
-  ) {}
+  ) { }
 
   onSubmit() {
     if (this.form.valid) {
