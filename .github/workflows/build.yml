@@ -57,6 +57,7 @@ jobs:
 
       - name: Set up Podman
         uses: gacts/install-podman@v1
+        if: github.repository == 'mcruzdev/timeless'
         id: podman
 
       - name: Login to Quay.io
