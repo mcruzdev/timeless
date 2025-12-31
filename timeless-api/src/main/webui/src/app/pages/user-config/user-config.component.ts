@@ -3,7 +3,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { ButtonDirective } from 'primeng/button';
 import { InputMask } from 'primeng/inputmask';
-import { TooltipModule } from 'primeng/tooltip'
+import { TooltipModule } from 'primeng/tooltip';
 import {
   FormBuilder,
   FormControl,
@@ -22,8 +22,7 @@ import { ToastService } from '../../services/toast.service';
     FormsModule,
     ReactiveFormsModule,
     ButtonDirective,
-    TooltipModule
-
+    TooltipModule,
   ],
   templateUrl: './user-config.component.html',
   styleUrl: './user-config.component.scss',
