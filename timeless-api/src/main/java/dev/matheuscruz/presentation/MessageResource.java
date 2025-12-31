@@ -1,6 +1,5 @@
 package dev.matheuscruz.presentation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.image.Image;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordRepository;
@@ -11,9 +10,10 @@ import dev.matheuscruz.infra.ai.TextAiService;
 import dev.matheuscruz.infra.ai.data.AiOperations;
 import dev.matheuscruz.infra.ai.data.RecognizedOperation;
 import dev.matheuscruz.infra.ai.data.RecognizedTransaction;
+import dev.matheuscruz.presentation.data.ImageRequest;
+import dev.matheuscruz.presentation.data.MessageRequest;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
@@ -25,16 +25,24 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * We allow only whatsapp clients to send messages to this endpoint.
+ * <p>
+ * While we do not have everything implemented in an asynchronous way without the communication between whatsapp app and
+ * our backend, we will block this endpoint to only whatsapp IP.
+ * <p>
+ * It is a block on network level, configured in the infrastructure layer.
+ */
 @Path("/api/messages")
 public class MessageResource {
 
-    private final UserRepository userRepository;
-    private final TextAiService aiService;
-    private final ImageAiService imageAiService;
-    private final RecordRepository recordRepository;
+    final UserRepository userRepository;
+    final TextAiService aiService;
+    final ImageAiService imageAiService;
+    final RecordRepository recordRepository;
 
     public MessageResource(TextAiService aiService, ImageAiService imageAiService, RecordRepository recordRepository,
-            ObjectMapper mapper, UserRepository userRepository) {
+            UserRepository userRepository) {
         this.aiService = aiService;
         this.imageAiService = imageAiService;
         this.recordRepository = recordRepository;
@@ -76,7 +84,7 @@ public class MessageResource {
     }
 
     private Response handleMessage(User user, String message) {
-        List<RecognizedOperation> response = aiService.handleMessage(message).all();
+        List<RecognizedOperation> response = aiService.handleMessage(message, user.getId()).all();
         return processOnlyAddTransaction(user, response);
     }
 
@@ -84,7 +92,7 @@ public class MessageResource {
 
         List<RecognizedTransaction> onlyAddTransaction = messages.stream()
                 .filter(message -> AiOperations.ADD_TRANSACTION.equals(message.operation()))
-                .map(recognizedOperation -> recognizedOperation.recognizedTransaction()).toList();
+                .map(RecognizedOperation::recognizedTransaction).toList();
 
         handleTransactions(onlyAddTransaction, user);
 
@@ -100,11 +108,5 @@ public class MessageResource {
                             .build());
             recordRepository.persist(recordStream);
         });
-    }
-
-    public record MessageRequest(@NotBlank String from, @NotBlank String message) {
-    }
-
-    public record ImageRequest(@NotBlank String from, @NotBlank String base64, String text, @NotBlank String mimeType) {
     }
 }

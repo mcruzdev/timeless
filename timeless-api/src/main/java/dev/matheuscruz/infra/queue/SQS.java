@@ -77,7 +77,8 @@ public class SQS {
 
     private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
         try {
-            AllRecognizedOperations allRecognizedOperations = aiService.handleMessage(message.messageBody());
+            AllRecognizedOperations allRecognizedOperations = aiService.handleMessage(message.messageBody(),
+                    user.getId());
 
             for (RecognizedOperation recognizedOperation : allRecognizedOperations.all()) {
                 switch (recognizedOperation.operation()) {
