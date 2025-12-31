@@ -4,8 +4,10 @@ import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.infra.security.BCryptAdapter;
 import dev.matheuscruz.infra.security.Groups;
+import dev.matheuscruz.presentation.data.SignInResponse;
 import io.quarkus.panache.common.Parameters;
 import io.smallrye.jwt.build.Jwt;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +20,7 @@ import java.time.Duration;
 import java.util.Set;
 
 @Path("/api/sign-in")
+@PermitAll
 public class SignInResource {
 
     UserRepository userRepository;
@@ -44,9 +47,4 @@ public class SignInResource {
         return Response.ok(new SignInResponse(token, user.getId(), user.fullName(), req.email())).build();
     }
 
-    public record SignInRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password) {
-    }
-
-    public record SignInResponse(String token, String id, String name, String email) {
-    }
 }
