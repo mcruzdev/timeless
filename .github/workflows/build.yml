@@ -99,9 +99,8 @@ jobs:
 
       - name: Check code formatting with Prettier
         run: npm run prettier:check
-
+        
       - name: Login to Quay.io
-        if: false # Disabled for now: we need to add chrome to the buildpack image first
         if: github.repository == 'mcruzdev/timeless'
         uses: docker/login-action@v3
         with:
@@ -109,17 +108,10 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Install pack CLI
-        if: false # Disabled for now: we need to add chrome to the buildpack image first
+      - name: Create Docker image
         if: github.repository == 'mcruzdev/timeless'
-        uses: buildpacks/github-actions/setup-pack@v5.10.0
+        run: docker build -f Dockerfile -t quay.io/timeless/whatsapp:${GITHUB_SHA::7} .
 
-      - name: Build and publish WhatsApp image with Buildpacks
-        if: false # Disabled for now: we need to add chrome to the buildpack image first
-        if: github.repository == 'mcruzdev/timeless' 
-        run: |
-          pack build quay.io/timeless/whatsapp:${GITHUB_SHA::7} \
-            --path . \
-            --builder paketobuildpacks/builder-jammy-base \
-            --buildpack paketo-buildpacks/nodejs \
-            --publish
+      - name: Push Docker image to Quay.io
+        if: github.repository == 'mcruzdev/timeless'
+        run: docker push quay.io/timeless/whatsapp:${GITHUB_SHA::7}
