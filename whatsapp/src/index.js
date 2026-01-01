@@ -1,11 +1,13 @@
 const path = require("path")
 
-require("dotenv").config({
-    path: path.resolve(
-        process.cwd(),
-        process.env.ENV === "local" ? ".env.local" : ".env"
-    ),
-})
+if (process.env.ENV !== "production") {
+    require("dotenv").config({
+        path: path.resolve(
+            process.cwd(),
+            process.env.ENV === "local" ? ".env.local" : ".env"
+        ),
+    })
+}
 
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
