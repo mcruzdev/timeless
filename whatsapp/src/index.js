@@ -9,7 +9,11 @@ if (process.env.ENV !== "production") {
     })
 } else {
     console.log("Running in production mode, skipping .env loading")
-    console.log("Queues are: ", process.env.INCOMING_MESSAGE_FIFO_URL, process.env.RECOGNIZED_MESSAGE_FIFO_URL)
+    console.log(
+        "Queues are: ",
+        process.env.INCOMING_MESSAGE_FIFO_URL,
+        process.env.RECOGNIZED_MESSAGE_FIFO_URL
+    )
 }
 
 const { Client, LocalAuth } = require("whatsapp-web.js")
