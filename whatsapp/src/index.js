@@ -17,7 +17,6 @@ if (process.env.ENV !== "production") {
 }
 
 const QRCode = require("qrcode")
-import { Resend } from "resend"
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
 const crypto = require("crypto")
@@ -93,8 +92,6 @@ const client = new Client({
 })
 
 client.on("qr", (qr) => {
-    console.log("Scan the following QRCode using WhatsApp")
-
     if (process.env.ENV === "production") {
         QRCode.toDataURL(qr, (err, url) => {
             if (err) {
@@ -115,13 +112,22 @@ client.on("qr", (qr) => {
                     })
                 )
                 .then(() => {
-                    console.log("QR code uploaded to S3 successfully")
+                    console.log("QR code uploaded to S3 successfully!")
+                    console.log(`
+1. Access the S3 bucket: ${process.env.ASSETS_BUCKET}
+2. Locate the QR code image inside the whatsapp-bot folder
+3. Scan the QR code with your WhatsApp mobile app to log in
+        `)
                 })
                 .catch((err) => {
                     console.error("Failed to upload QR code to S3:", err)
                 })
         })
     } else {
+        console.log(`
+1. See the terminal for the QR code
+2. Scan the QR code with your WhatsApp mobile app to log in
+        `)
         qrcode.generate(qr, { small: true })
     }
 })
