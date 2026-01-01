@@ -133,10 +133,12 @@ resource "aws_iam_user_policy_attachment" "attach_api_sqs_policy" {
 # SQS Queues
 resource "aws_sqs_queue" "incoming_messages" {
   fifo_queue                  = true
+  name                        = var.incoming_messages_queue_name
   content_based_deduplication = true
 }
 
 resource "aws_sqs_queue" "message_processed" {
   fifo_queue                  = true
+  name                        = var.message_processed_queue_name
   content_based_deduplication = true
 }
