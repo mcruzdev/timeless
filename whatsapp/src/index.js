@@ -399,5 +399,3 @@ async function sendRecordResult(
 }
 
 client.initialize()
-
-// re_dN6xCZKU_KAg5ZAs8ViReNif3kQDBve3j
