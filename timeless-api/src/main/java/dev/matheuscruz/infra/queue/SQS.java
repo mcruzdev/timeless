@@ -39,8 +39,8 @@ public class SQS {
 
     private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(RecognizedOperation.class);
 
-    public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-messages.queue-url") String incomingMessagesUrl,
-            @ConfigProperty(name = "whatsapp.messages-processed.queue-url") String messagesProcessedUrl,
+    public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-message.queue-url") String incomingMessagesUrl,
+            @ConfigProperty(name = "whatsapp.recognized-message.queue-url") String messagesProcessedUrl,
             ObjectMapper objectMapper, TextAiService aiService, RecordRepository recordRepository,
             UserRepository userRepository) {
 
