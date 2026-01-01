@@ -57,7 +57,7 @@ AWS_SECRET_ACCESS_KEY=
 OPENAI_API_KEY=
 SECURITY_KEY=
 INCOMING_MESSAGE_FIFO_URL=
-MESSAGES_PROCESSED_FIFO_URL=
+RECOGNIZED_MESSAGES_FIFO_URL=
 EOF
 ```
 
@@ -73,7 +73,7 @@ The table below explains the purpose of each variable along with suggested examp
 | `OPENAI_API_KEY`              | Your OpenAI API key                                                                          | `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`                 |
 | `SECURITY_KEY`                | Secret key used for AES encryption (must be exactly 16, 24, or 32 characters long, no accents) | `MySuperSecretAESKey12345678901234`                          |
 | `INCOMING_MESSAGE_FIFO_URL`  | The URL of the SQS FIFO queue for incoming messages                                          | `https://sqs.us-east-1.amazonaws.com/123456789/incoming-messages.fifo` |
-| `MESSAGES_PROCESSED_FIFO_URL`| The URL of the SQS FIFO queue for processed messages                                        | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo` |
+| `RECOGNIZED_MESSAGES_FIFO_URL`| The URL of the SQS FIFO queue for processed messages                                        | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo` |
 
 4. Execute the application in Dev mode
 
@@ -85,7 +85,7 @@ The table below explains the purpose of each variable along with suggested examp
 
 6. Sign in at <http://localhost:8080>
 
-7. Add the user phone number at <http://localhost:8080/home/user-configs>, this phone number must be set after on `ALLOWED_USERS`.
+7. Add the user phone number at <http://localhost:8080/home/user-configs>, this phone number must be set after on `ALLOWED_PHONE_NUMBERS`.
 
 ## Configuring and running the whatsapp application
 
@@ -104,10 +104,10 @@ npm install
 | `AWS_ACCESS_KEY_ID`                  | Your AWS Access Key                                                                               | `AKIAxxxxxxxxxxxxxxxxxx`                                         |
 | `AWS_SECRET_ACCESS_KEY`                  | Your AWS Secret Key                                                                               | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`                       |
 | `ASSETS_BUCKET`              | The name of the bucket where audio and images will be stored (created via Terraform)                      | `my-assets-bucket`                                                 |
-| `ALLOWED_USERS`                | Comma-separated list of phone numbers allowed to interact with the bot             | `5511999999999,5511888888888`                                  |
+| `ALLOWED_PHONE_NUMBERS`                | Comma-separated list of phone numbers allowed to interact with the bot             | `5511999999999,5511888888888`                                  |
 | `OPENAI_API_KEY`             | Your OpenAI API Key used to access GPT and Whisper APIs                                           | `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`            |
 | `INCOMING_MESSAGE_QUEUE`     | URL of the SQS queue that receives incoming messages                                              | `https://sqs.us-east-1.amazonaws.com/123456789/incoming-messages.fifo`    |
-| `MESSAGES_PROCESSED_FIFO_URL`| URL of the SQS FIFO queue where processed messages are sent                                       | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo`   |
+| `RECOGNIZED_MESSAGES_FIFO_URL`| URL of the SQS FIFO queue where processed messages are sent                                       | `https://sqs.us-east-1.amazonaws.com/123456789/messages-processed.fifo`   |
 
 4. Start the application
 
@@ -127,7 +127,7 @@ npm run start
 2. Fill out the registration form with your details and submit it.
 3. Log in to your account at [http://localhost:8080](http://localhost:8080).
 4. Add your phone number on the [User Configs page](http://localhost:8080/home/user-configs).  
-   ⚠️ Make sure the phone number matches one of the values defined in the `ALLOWED_USERS` environment variable.
+   ⚠️ Make sure the phone number matches one of the values defined in the `ALLOWED_PHONE_NUMBERS` environment variable.
 5. After connected the device with the scanned QR Code, send the following message: `"Achei mil reais no chão da praia"`.
 
    You should receive something like it:

@@ -71,7 +71,7 @@ const messages = {
 }
 
 const getAllowedUsers = () =>
-    process.env.ALLOWED_USERS.split(",").filter(Boolean)
+    process.env.ALLOWED_PHONE_NUMBERS.split(",").filter(Boolean)
 
 const client = new Client({
     clientId: "timeless-bot",
@@ -264,7 +264,7 @@ async function uploadMediaToS3(message, media) {
 }
 
 const consumer = Consumer.create({
-    queueUrl: process.env.MESSAGES_PROCESSED_FIFO_URL,
+    queueUrl: process.env.RECOGNIZED_MESSAGES_FIFO_URL,
     sqs: sqsClient,
     suppressFifoWarning: true,
     handleMessage: async (sqsMessage) => {

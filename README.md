@@ -77,7 +77,7 @@ docker-compose up -d
 ### Execute the whatsapp application
 
 > [!NOTE]
-> Before you start, make sure to fill the `ALLOWED_USERS` and `OPENAI_API_KEY` variables in the `.env.local` file. This variable determines the number of users who can interact with the bot.
+> Before you start, make sure to fill the `ALLOWED_PHONE_NUMBERS` and `OPENAI_API_KEY` variables in the `.env.local` file. This variable determines the number of users who can interact with the bot.
 
 1. Go to `whatsapp` directory and install all necessary packages:
 
