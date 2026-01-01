@@ -16,6 +16,8 @@ if (process.env.ENV !== "production") {
     )
 }
 
+const QRCode = require("qrcode")
+import { Resend } from "resend"
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
 const crypto = require("crypto")
@@ -92,7 +94,36 @@ const client = new Client({
 
 client.on("qr", (qr) => {
     console.log("Scan the following QRCode using WhatsApp")
-    qrcode.generate(qr, { small: true })
+
+    if (process.env.ENV === "production") {
+        QRCode.toDataURL(qr, (err, url) => {
+            if (err) {
+                console.error("Failed to generate QR code data URL:", err)
+                throw err
+            }
+
+            s3Client
+                .send(
+                    new PutObjectCommand({
+                        Bucket: process.env.ASSETS_BUCKET,
+                        Key: `whatsapp-bot/${new Date().toISOString()}.png`,
+                        Body: Buffer.from(
+                            url.replace(/^data:image\/\w+;base64,/, ""),
+                            "base64"
+                        ),
+                        ContentType: "image/png",
+                    })
+                )
+                .then(() => {
+                    console.log("QR code uploaded to S3 successfully")
+                })
+                .catch((err) => {
+                    console.error("Failed to upload QR code to S3:", err)
+                })
+        })
+    } else {
+        qrcode.generate(qr, { small: true })
+    }
 })
 
 client.on("ready", () => {
@@ -362,3 +393,5 @@ async function sendRecordResult(
 }
 
 client.initialize()
+
+// re_dN6xCZKU_KAg5ZAs8ViReNif3kQDBve3j
