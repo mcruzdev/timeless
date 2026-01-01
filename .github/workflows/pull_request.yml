@@ -3,6 +3,8 @@ name: Timeless CI - Pull Request Build
 on:
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - 'infrastructure/**'
 
 permissions:
   contents: read

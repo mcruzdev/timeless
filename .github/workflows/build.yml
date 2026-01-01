@@ -3,9 +3,12 @@ name: Timeless CI - Build & Publish
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'infrastructure/**'
   pull_request:
     branches: [ "main" ]
-
+    paths-ignore:
+      - 'infrastructure/**'
 
 permissions:
   contents: read
