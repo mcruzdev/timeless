@@ -1,15 +1,20 @@
 package dev.matheuscruz.presentation;
 
-import dev.matheuscruz.domain.*;
+import dev.matheuscruz.domain.AmountAndTypeOnly;
 import dev.matheuscruz.domain.Record;
+import dev.matheuscruz.domain.RecordRepository;
+import dev.matheuscruz.domain.Transactions;
+import dev.matheuscruz.domain.User;
+import dev.matheuscruz.domain.UserRepository;
+import dev.matheuscruz.presentation.data.CreateRecordRequest;
+import dev.matheuscruz.presentation.data.PageRecord;
+import dev.matheuscruz.presentation.data.RecordItemResponse;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
-import jakarta.transaction.Transactional;
+import io.quarkus.security.Authenticated;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
@@ -19,22 +24,26 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.Claims;
 import org.jboss.resteasy.reactive.RestQuery;
 
+@RequestScoped
 @Path("/api/records")
+@Authenticated
 public class RecordResource {
+
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    @Claim(standard = Claims.upn)
+    String upn;
 
     RecordRepository recordRepository;
     UserRepository userRepository;
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    static Instant INSTANT_2025 = LocalDateTime.of(2025, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
 
     public RecordResource(RecordRepository recordRepository, UserRepository userRepository) {
         this.recordRepository = recordRepository;
@@ -43,9 +52,9 @@ public class RecordResource {
 
     @DELETE
     @Path("/{id}")
-    @Transactional
     public Response delete(@PathParam("id") Long id) {
-        recordRepository.deleteById(id);
+        QuarkusTransaction.requiringNew().run(() -> recordRepository.delete("id = :id AND userId = :userId",
+                Parameters.with("id", id).and("userId", upn)));
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
@@ -56,8 +65,11 @@ public class RecordResource {
         Record record = new Record.Builder().userId(user.getId()).amount(req.amount()).description(req.description())
                 .transaction(req.transaction()).category(req.category()).build();
 
-        QuarkusTransaction.requiringNew().run(() -> this.recordRepository.persist(record));
+        if (!user.getId().equals(upn)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
 
+        QuarkusTransaction.requiringNew().run(() -> this.recordRepository.persist(record));
         return Response.created(URI.create("/api/records/" + record.getId())).build();
     }
 
@@ -67,40 +79,29 @@ public class RecordResource {
         int page = Integer.parseInt(Optional.of(p).orElse("0"));
         int limit = Integer.parseInt(Optional.of(l).orElse("10"));
 
-        long totalRecords = recordRepository.count();
+        // TODO: https://github.com/mcruzdev/timeless/issues/125
+        long totalRecords = recordRepository.count("userId = :userId", Parameters.with("userId", upn));
 
-        List<RecordItemResponse> output = recordRepository.findAll().page(Page.of(page, limit)).list().stream()
-                .map(record -> {
+        // pagination
+        List<RecordItemResponse> output = recordRepository.find("userId = :userId", Parameters.with("userId", upn))
+                .page(Page.of(page, limit)).list().stream().map(record -> {
                     String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                             .format(formatter);
                     return new RecordItemResponse(record.getId(), record.getAmount(), record.getDescription(),
                             record.getTransaction().name(), format, record.getCategory().name());
                 }).toList();
 
-        List<Record> list = recordRepository.find("createdAt >= :instant AND createdAt <= :now",
-                Parameters.with("instant", INSTANT_2025).and("now", Instant.now())).list();
-
-        Optional<BigDecimal> totalExpenses = list.stream()
-                .filter(item -> item.getTransaction().equals(Transactions.OUT)).map(Record::getAmount)
+        // calculate total expenses and total in
+        List<AmountAndTypeOnly> amountAndType = recordRepository.getRecordsWithAmountAndTypeOnlyByUser(upn);
+        Optional<BigDecimal> totalExpenses = amountAndType.stream()
+                .filter(item -> item.getTransaction().equals(Transactions.OUT)).map(AmountAndTypeOnly::getAmount)
                 .reduce(BigDecimal::add);
 
-        Optional<BigDecimal> totalIn = list.stream().filter(item -> item.getTransaction().equals(Transactions.IN))
-                .map(Record::getAmount).reduce(BigDecimal::add);
+        Optional<BigDecimal> totalIn = amountAndType.stream()
+                .filter(item -> item.getTransaction().equals(Transactions.IN)).map(AmountAndTypeOnly::getAmount)
+                .reduce(BigDecimal::add);
 
-        return Response.ok(new PagedRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO),
+        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO),
                 totalIn.orElse(BigDecimal.ZERO))).build();
     }
-
-    public record PagedRecord(List<RecordItemResponse> items, Long totalRecords, BigDecimal totalExpenses,
-            BigDecimal totalIn) {
-    }
-
-    public record RecordItemResponse(Long id, BigDecimal amount, String description, String transaction,
-            String createdAt, String category) {
-    }
-
-    public record CreateRecordRequest(@PositiveOrZero BigDecimal amount, @NotBlank String description,
-            @NotNull Transactions transaction, @NotBlank String from, @NotNull Categories category) {
-    }
-
 }

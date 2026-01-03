@@ -18,7 +18,6 @@ export class TimelessApiService {
   getRecords(page: number, size: number): Observable<RecordPageResponse> {
     const httpParams = new HttpParams();
     const params = httpParams.append('page', page).append('limit', size);
-    console.log(params);
     return this.httpClient.get<RecordPageResponse>('/api/records', {
       params,
     });

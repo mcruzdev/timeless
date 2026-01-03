@@ -8,6 +8,14 @@ See our landing page: [**https://timeless.platformoon.com**](https://timeless.pl
 
 This application monitors WhatsApp messages for signs of purchases (such as receipts, audio messages, transfers), extracts relevant information (amounts, descriptions), and automatically sends it to **Timeless**, helping you keep your finances organized — effortlessly.
 
+## ⚠️ Project Intent
+
+Timeless is primarily an educational project built to explore the intersection of automated messaging, NLP, and cloud infrastructure. While it mimics real-world financial tracking systems, its core goal is to demonstrate:
+
+* **Production-like Architecture**: Integrating Java/Quarkus with AI and external messaging APIs.
+* **Continuous Improvement**: The codebase is designed to evolve. We encourage experiments with local LLMs and different cloud providers.
+* **Learning by Doing**: This is a sandbox for implementing "real-world" logic in a controlled environment. Feel free to refactor, break, and improve!
+
 ## 🚀 Features
 
 - 📩 Automatic reading of WhatsApp messages
@@ -69,7 +77,7 @@ docker-compose up -d
 ### Execute the whatsapp application
 
 > [!NOTE]
-> Before you start, make sure to fill the `ALLOWED_USERS` and `OPENAI_API_KEY` variables in the `.env.local` file. This variable determines the number of users who can interact with the bot.
+> Before you start, make sure to fill the `ALLOWED_PHONE_NUMBERS` and `OPENAI_API_KEY` variables in the `.env.local` file. This variable determines the number of users who can interact with the bot.
 
 1. Go to `whatsapp` directory and install all necessary packages:
 

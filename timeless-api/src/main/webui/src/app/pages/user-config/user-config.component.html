@@ -64,18 +64,21 @@
           ></p-inputmask>
         </div>
 
-        <div class="flex gap-4 md:col-span-2 justify-center">
+        <div class="flex gap-4 mt-4 md:col-span-2 justify-center">
           <button
             pButton
-            severity="contrast"
+            severity="primary"
             icon="pi pi-save"
             size="small"
             type="submit"
             label="Salvar"
+            class="w-full"
           ></button>
 
           <button
-            class="ml-2"
+            pTooltip="Opção desabilitada, por enquanto você só pode alterar número de telefone."
+            disabled
+            class="w-full"
             pButton
             severity="contrast"
             icon="pi pi-pencil"

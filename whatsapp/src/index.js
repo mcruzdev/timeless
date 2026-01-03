@@ -1,12 +1,22 @@
 const path = require("path")
 
-require("dotenv").config({
-    path: path.resolve(
-        process.cwd(),
-        process.env.ENV === "local" ? ".env.local" : ".env"
-    ),
-})
+if (process.env.ENV !== "production") {
+    require("dotenv").config({
+        path: path.resolve(
+            process.cwd(),
+            process.env.ENV === "local" ? ".env.local" : ".env"
+        ),
+    })
+} else {
+    console.log("Running in production mode, skipping .env loading")
+    console.log(
+        "Queues are: ",
+        process.env.INCOMING_MESSAGE_FIFO_URL,
+        process.env.RECOGNIZED_MESSAGE_FIFO_URL
+    )
+}
 
+const QRCode = require("qrcode")
 const { Client, LocalAuth } = require("whatsapp-web.js")
 const qrcode = require("qrcode-terminal")
 const crypto = require("crypto")
@@ -71,7 +81,7 @@ const messages = {
 }
 
 const getAllowedUsers = () =>
-    process.env.ALLOWED_USERS.split(",").filter(Boolean)
+    process.env.ALLOWED_PHONE_NUMBERS.split(",").filter(Boolean)
 
 const client = new Client({
     clientId: "timeless-bot",
@@ -82,8 +92,44 @@ const client = new Client({
 })
 
 client.on("qr", (qr) => {
-    console.log("Scan the following QRCode using WhatsApp")
-    qrcode.generate(qr, { small: true })
+    if (process.env.ENV === "production") {
+        QRCode.toDataURL(qr, (err, url) => {
+            if (err) {
+                console.error("Failed to generate QR code data URL:", err)
+                throw err
+            }
+
+            s3Client
+                .send(
+                    new PutObjectCommand({
+                        Bucket: process.env.ASSETS_BUCKET,
+                        Key: `whatsapp-bot/${new Date().toISOString()}.png`,
+                        Body: Buffer.from(
+                            url.replace(/^data:image\/\w+;base64,/, ""),
+                            "base64"
+                        ),
+                        ContentType: "image/png",
+                    })
+                )
+                .then(() => {
+                    console.log("QR code uploaded to S3 successfully!")
+                    console.log(`
+1. Access the S3 bucket: ${process.env.ASSETS_BUCKET}
+2. Locate the QR code image inside the whatsapp-bot folder
+3. Scan the QR code with your WhatsApp mobile app to log in
+        `)
+                })
+                .catch((err) => {
+                    console.error("Failed to upload QR code to S3:", err)
+                })
+        })
+    } else {
+        console.log(`
+1. See the terminal for the QR code
+2. Scan the QR code with your WhatsApp mobile app to log in
+        `)
+        qrcode.generate(qr, { small: true })
+    }
 })
 
 client.on("ready", () => {
@@ -264,7 +310,7 @@ async function uploadMediaToS3(message, media) {
 }
 
 const consumer = Consumer.create({
-    queueUrl: process.env.MESSAGES_PROCESSED_FIFO_URL,
+    queueUrl: process.env.RECOGNIZED_MESSAGE_FIFO_URL,
     sqs: sqsClient,
     suppressFifoWarning: true,
     handleMessage: async (sqsMessage) => {

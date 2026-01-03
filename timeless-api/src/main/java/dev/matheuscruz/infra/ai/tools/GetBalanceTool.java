@@ -17,9 +17,9 @@ public class GetBalanceTool {
         this.recordRepository = recordRepository;
     }
 
-    @Tool(value = "get account balance")
-    public BigDecimal getBalance() {
-        List<AmountAndTypeOnly> list = this.recordRepository.getRecordsWithAmountAndTypeOnly();
+    @Tool(value = "get account balance for a user")
+    public BigDecimal getBalance(String userId) {
+        List<AmountAndTypeOnly> list = this.recordRepository.getRecordsWithAmountAndTypeOnlyByUser(userId);
         return list.stream()
                 .map(record -> record.getTransaction().equals(Transactions.OUT)
                         ? record.getAmount().multiply(new BigDecimal(-1))
