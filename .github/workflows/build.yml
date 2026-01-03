@@ -17,6 +17,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  PUBLISH: ${{ github.repository == 'mcruzdev/timeless' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
 jobs:
   timeless-api:
     name: Build & Publish - Timeless API (Java)
@@ -60,11 +63,11 @@ jobs:
 
       - name: Set up Podman
         uses: gacts/install-podman@v1
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         id: podman
 
       - name: Login to Quay.io
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         uses: docker/login-action@v3
         with:
           registry: quay.io
@@ -72,11 +75,11 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Create Docker image
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         run: docker build -f src/main/docker/Dockerfile.jvm -t quay.io/timeless/timeless-api:${GITHUB_SHA::7} .
 
       - name: Push Docker image to Quay.io
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         run: docker push quay.io/timeless/timeless-api:${GITHUB_SHA::7}
 
   whatsapp:
@@ -104,7 +107,7 @@ jobs:
         run: npm run prettier:check
         
       - name: Login to Quay.io
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         uses: docker/login-action@v3
         with:
           registry: quay.io
@@ -112,9 +115,9 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Create Docker image
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         run: docker build -f Dockerfile -t quay.io/timeless/whatsapp:${GITHUB_SHA::7} .
 
       - name: Push Docker image to Quay.io
-        if: github.repository == 'mcruzdev/timeless'
+        if: env.PUBLISH == 'true'
         run: docker push quay.io/timeless/whatsapp:${GITHUB_SHA::7}
