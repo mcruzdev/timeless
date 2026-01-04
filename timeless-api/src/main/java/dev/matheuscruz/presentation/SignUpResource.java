@@ -7,7 +7,6 @@ import dev.matheuscruz.infra.security.BCryptAdapter;
 import dev.matheuscruz.presentation.data.ProblemResponse;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +16,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/sign-up")
-@PermitAll
 public class SignUpResource {
 
     UserRepository userRepository;
@@ -49,7 +47,7 @@ public class SignUpResource {
                 .build();
     }
 
-    public record SignUpRequest(@Email String email, @NotBlank @Size(min = 8, max = 32) String password,
+    public record SignUpRequest(@NotBlank @Email String email, @NotBlank @Size(min = 8, max = 32) String password,
             @NotBlank String firstName, @NotBlank String lastName, @NotBlank String phoneNumber) {
     }
 
