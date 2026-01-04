@@ -44,14 +44,12 @@
     <label for="email">Seu melhor e-mail</label>
   </p-float-label>
   <p-float-label variant="in">
-    <input
+    <p-inputMask
       id="phone_number"
-      class="w-full text-center font-medium"
-      type="text"
-      pSize="small"
-      pInputText
+      styleClass="w-full text-center font-medium"
+      mask="(99) 99999-9999"
       formControlName="phoneNumber"
-      autocomplete="false"
+      autocomplete="off"
     />
     <label for="phone_number">Seu número de telefone</label>
   </p-float-label>
