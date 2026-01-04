@@ -4,7 +4,7 @@ import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.infra.security.AESAdapter;
 import dev.matheuscruz.infra.security.BCryptAdapter;
-import dev.matheuscruz.presentation.data.Problem;
+import dev.matheuscruz.presentation.data.ProblemResponse;
 import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.validation.Valid;
@@ -33,10 +33,11 @@ public class SignUpResource {
         boolean exists = this.userRepository.existsByEmail(req.email());
         if (exists) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity(new Problem("Este nome de usuário já foi usado. Tente outro.")).build();
+                    .entity(new ProblemResponse("Este nome de usuário já foi usado. Tente outro.")).build();
         }
 
-        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName());
+        User user = User.create(req.email(), BCryptAdapter.encrypt(req.password()), req.firstName(), req.lastName(),
+                req.phoneNumber());
 
         QuarkusTransaction.requiringNew().run(() -> {
             this.userRepository.persist(user);
@@ -47,7 +48,7 @@ public class SignUpResource {
     }
 
     public record SignUpRequest(@NotBlank @Email String email, @NotBlank @Size(min = 8, max = 32) String password,
-            @NotBlank String firstName, @NotBlank String lastName) {
+            @NotBlank String firstName, @NotBlank String lastName, @NotBlank String phoneNumber) {
     }
 
     public record SignUpResponse(String id, String email) {
