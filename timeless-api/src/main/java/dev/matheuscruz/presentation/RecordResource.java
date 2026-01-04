@@ -19,7 +19,9 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import dev.matheuscruz.presentation.data.UpdateRecordRequest;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
@@ -56,6 +58,24 @@ public class RecordResource {
         QuarkusTransaction.requiringNew().run(() -> recordRepository.delete("id = :id AND userId = :userId",
                 Parameters.with("id", id).and("userId", upn)));
         return Response.status(Response.Status.NO_CONTENT).build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response update(@PathParam("id") Long id, @Valid UpdateRecordRequest req) {
+        Record record = this.recordRepository.findById(id);
+
+        if (record == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!record.getUserId().equals(upn)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        
+        QuarkusTransaction.requiringNew().run(() -> record.update(req));
+        
+        return Response.noContent().build();
     }
 
     @POST

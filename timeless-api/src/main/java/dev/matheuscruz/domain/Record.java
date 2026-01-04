@@ -1,5 +1,6 @@
 package dev.matheuscruz.domain;
 
+import dev.matheuscruz.presentation.data.UpdateRecordRequest;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -70,6 +71,13 @@ public class Record {
         return createdAt;
     }
 
+    public void update(UpdateRecordRequest request) {
+        this.amount = Objects.requireNonNull(request.amount());
+        this.description = Objects.requireNonNull(request.description());
+        this.transaction = Objects.requireNonNull(request.transaction());
+        this.category = Objects.requireNonNull(request.category());
+    }
+
     public static class Builder {
         private String userId;
         private BigDecimal amount;
@@ -115,5 +123,7 @@ public class Record {
 
             return new Record(userId, amount, description, transaction, category);
         }
+
+
     }
 }
