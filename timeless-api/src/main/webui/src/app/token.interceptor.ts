@@ -4,8 +4,10 @@ import { timelessLocalStorageKey } from './constants';
 const allowedPaths = [
   '/api/sign-in',
   '/api/sign-out',
+  '/api/sign-up',
   'api/sign-in',
   'api/sign-out',
+  'api/sign-up',
 ];
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
