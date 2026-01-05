@@ -11,7 +11,7 @@ import { InputText } from 'primeng/inputtext';
 import { Router, RouterLink } from '@angular/router';
 import { FloatLabel } from 'primeng/floatlabel';
 import { TimelessApiService } from '../../../timeless-api.service';
-import { catchError } from 'rxjs';
+import { catchError, EMPTY } from 'rxjs';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -45,7 +45,7 @@ export class SignUpComponent {
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
     private readonly toast: ToastService,
-  ) {}
+  ) { }
 
   onSubmit() {
     if (this.form.valid) {
@@ -53,10 +53,10 @@ export class SignUpComponent {
         .signUp(this.form.value)
         .pipe(
           catchError((err: any) => {
-            if (err.error.message) {
+            if (err.error?.message) {
               this.toast.error('Conflito', err.error.message);
             }
-            return err;
+            return EMPTY;
           }),
         )
         .subscribe((_) => {
