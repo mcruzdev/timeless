@@ -4,5 +4,6 @@ import dev.matheuscruz.domain.Categories;
 import dev.matheuscruz.domain.Transactions;
 import java.math.BigDecimal;
 
-public record UpdateRecordRequest(BigDecimal amount, String description, Transactions transaction, Categories category) {
+public record UpdateRecordRequest(BigDecimal amount, String description, Transactions transaction,
+        Categories category) {
 }

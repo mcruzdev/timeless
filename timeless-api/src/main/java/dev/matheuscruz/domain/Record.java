@@ -124,6 +124,5 @@ public class Record {
             return new Record(userId, amount, description, transaction, category);
         }
 
-
     }
 }

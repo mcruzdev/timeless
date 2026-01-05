@@ -38,35 +38,19 @@ class RecordResourceTest {
 
     @Test
     @TestSecurity(user = "testUser", roles = "user")
-    @OidcSecurity(claims = {
-        @Claim(key = "upn", value = "testUser")
-    })
+    @OidcSecurity(claims = { @Claim(key = "upn", value = "testUser") })
     void shouldUpdateRecord() {
         // Given
-        Record record = new Record.Builder()
-                .userId("testUser")
-                .amount(new BigDecimal("100.00"))
-                .description("Original Description")
-                .transaction(Transactions.OUT)
-                .category(Categories.FOOD)
-                .build();
-        
+        Record record = new Record.Builder().userId("testUser").amount(new BigDecimal("100.00"))
+                .description("Original Description").transaction(Transactions.OUT).category(Categories.FOOD).build();
+
         saveRecord(record);
 
-        UpdateRecordRequest request = new UpdateRecordRequest(
-                new BigDecimal("150.00"),
-                "Updated Description",
-                Transactions.IN,
-                Categories.SALARY
-        );
+        UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
+                Transactions.IN, Categories.SALARY);
 
         // When
-        given()
-                .contentType("application/json")
-                .body(request)
-                .when()
-                .put("/api/records/" + record.getId())
-                .then()
+        given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
                 .statusCode(204);
 
         // Then
@@ -80,60 +64,32 @@ class RecordResourceTest {
 
     @Test
     @TestSecurity(user = "otherUser", roles = "user")
-    @OidcSecurity(claims = {
-        @Claim(key = "upn", value = "otherUser")
-    })
+    @OidcSecurity(claims = { @Claim(key = "upn", value = "otherUser") })
     void shouldNotUpdateRecordOfAnotherUser() {
         // Given
-        Record record = new Record.Builder()
-                .userId("testUser")
-                .amount(new BigDecimal("100.00"))
-                .description("Original Description")
-                .transaction(Transactions.OUT)
-                .category(Categories.FOOD)
-                .build();
-        
+        Record record = new Record.Builder().userId("testUser").amount(new BigDecimal("100.00"))
+                .description("Original Description").transaction(Transactions.OUT).category(Categories.FOOD).build();
+
         saveRecord(record);
 
-        UpdateRecordRequest request = new UpdateRecordRequest(
-                new BigDecimal("150.00"),
-                "Updated Description",
-                Transactions.IN,
-                Categories.SALARY
-        );
+        UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
+                Transactions.IN, Categories.SALARY);
 
         // When
-        given()
-                .contentType("application/json")
-                .body(request)
-                .when()
-                .put("/api/records/" + record.getId())
-                .then()
+        given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
                 .statusCode(403);
     }
 
     @Test
     @TestSecurity(user = "testUser", roles = "user")
-    @OidcSecurity(claims = {
-        @Claim(key = "upn", value = "testUser")
-    })
+    @OidcSecurity(claims = { @Claim(key = "upn", value = "testUser") })
     void shouldReturnNotFoundWhenRecordDoesNotExist() {
-        UpdateRecordRequest request = new UpdateRecordRequest(
-                new BigDecimal("150.00"),
-                "Updated Description",
-                Transactions.IN,
-                Categories.SALARY
-        );
+        UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
+                Transactions.IN, Categories.SALARY);
 
-        given()
-                .contentType("application/json")
-                .body(request)
-                .when()
-                .put("/api/records/999")
-                .then()
-                .statusCode(404);
+        given().contentType("application/json").body(request).when().put("/api/records/999").then().statusCode(404);
     }
-    
+
     @Transactional
     void saveRecord(Record record) {
         recordRepository.persist(record);

@@ -9,6 +9,7 @@ import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.presentation.data.CreateRecordRequest;
 import dev.matheuscruz.presentation.data.PageRecord;
 import dev.matheuscruz.presentation.data.RecordItemResponse;
+import dev.matheuscruz.presentation.data.UpdateRecordRequest;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
@@ -21,7 +22,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
-import dev.matheuscruz.presentation.data.UpdateRecordRequest;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
@@ -72,9 +72,9 @@ public class RecordResource {
         if (!record.getUserId().equals(upn)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        
+
         QuarkusTransaction.requiringNew().run(() -> record.update(req));
-        
+
         return Response.noContent().build();
     }
 
