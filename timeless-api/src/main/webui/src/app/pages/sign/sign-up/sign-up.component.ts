@@ -45,7 +45,7 @@ export class SignUpComponent {
     private readonly timelessApiService: TimelessApiService,
     private readonly router: Router,
     private readonly toast: ToastService,
-  ) { }
+  ) {}
 
   onSubmit() {
     if (this.form.valid) {
