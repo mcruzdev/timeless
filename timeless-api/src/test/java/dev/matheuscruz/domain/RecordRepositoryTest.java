@@ -29,26 +29,23 @@ class RecordRepositoryTest {
     @Transactional
     @DisplayName("Should return record summary correctly for a given user")
     void shouldReturnRecordSummaryCorrectly() {
-        // Arrange
+
         String userId = "user-" + Instancio.create(String.class);
 
         List<Record> recordsToPersist = new ArrayList<>();
 
-        // 3 Expenses for user-test-1 (using Instancio for descriptions)
         for (int i = 0; i < 3; i++) {
             recordsToPersist.add(
                     new Record.Builder().userId(userId).transaction(Transactions.OUT).amount(new BigDecimal("10.00"))
                             .description(Instancio.create(String.class)).category(Categories.GENERAL).build());
         }
 
-        // 2 Incomes for user-test-1
         for (int i = 0; i < 2; i++) {
             recordsToPersist.add(
                     new Record.Builder().userId(userId).transaction(Transactions.IN).amount(new BigDecimal("50.00"))
                             .description(Instancio.create(String.class)).category(Categories.NONE).build());
         }
 
-        // 5 Records for another user
         for (int i = 0; i < 5; i++) {
             recordsToPersist.add(new Record.Builder().userId("other-" + userId).transaction(Transactions.OUT)
                     .amount(new BigDecimal("5.00")).description("Other " + i).category(Categories.FIXED_COSTS).build());
@@ -56,10 +53,8 @@ class RecordRepositoryTest {
 
         recordsToPersist.forEach(recordRepository::persist);
 
-        // Act
         RecordSummary summary = recordRepository.getRecordSummary(userId, 0, 10);
 
-        // Assert
         assertThat(summary).isNotNull();
         assertThat(summary.totalRecords()).isEqualTo(5);
         assertThat(summary.totalExpenses()).isEqualByComparingTo(new BigDecimal("30.00"));
@@ -71,10 +66,8 @@ class RecordRepositoryTest {
     @Transactional
     @DisplayName("Should return zeroed summary when user has no records")
     void shouldReturnZeroedSummaryWhenNoRecords() {
-        // Act
         RecordSummary summary = recordRepository.getRecordSummary("empty-" + Instancio.create(String.class), 0, 10);
 
-        // Assert
         assertThat(summary).isNotNull();
         assertThat(summary.totalRecords()).isZero();
         assertThat(summary.totalExpenses()).isEqualByComparingTo(BigDecimal.ZERO);
