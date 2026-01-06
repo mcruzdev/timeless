@@ -1,9 +1,8 @@
 package dev.matheuscruz.presentation;
 
-import dev.matheuscruz.domain.AmountAndTypeOnly;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordRepository;
-import dev.matheuscruz.domain.Transactions;
+import dev.matheuscruz.domain.RecordSummary;
 import dev.matheuscruz.domain.User;
 import dev.matheuscruz.domain.UserRepository;
 import dev.matheuscruz.presentation.data.CreateRecordRequest;
@@ -75,33 +74,20 @@ public class RecordResource {
 
     @GET
     public Response getRecords(@RestQuery("page") String p, @RestQuery("limit") String l) {
+        int page = Integer.parseInt(Optional.ofNullable(p).orElse("0"));
+        int limit = Integer.parseInt(Optional.ofNullable(l).orElse("10"));
 
-        int page = Integer.parseInt(Optional.of(p).orElse("0"));
-        int limit = Integer.parseInt(Optional.of(l).orElse("10"));
+        RecordSummary summary = recordRepository.getRecordSummary(upn, page, limit);
 
-        // TODO: https://github.com/mcruzdev/timeless/issues/125
-        long totalRecords = recordRepository.count("userId = :userId", Parameters.with("userId", upn));
+        List<RecordItemResponse> output = summary.records().stream().map(record -> {
+            String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
+                    .format(formatter);
+            return new RecordItemResponse(record.getId(), record.getAmount(), record.getDescription(),
+                    record.getTransaction().name(), format, record.getCategory().name());
+        }).toList();
 
-        // pagination
-        List<RecordItemResponse> output = recordRepository.find("userId = :userId", Parameters.with("userId", upn))
-                .page(Page.of(page, limit)).list().stream().map(record -> {
-                    String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
-                            .format(formatter);
-                    return new RecordItemResponse(record.getId(), record.getAmount(), record.getDescription(),
-                            record.getTransaction().name(), format, record.getCategory().name());
-                }).toList();
-
-        // calculate total expenses and total in
-        List<AmountAndTypeOnly> amountAndType = recordRepository.getRecordsWithAmountAndTypeOnlyByUser(upn);
-        Optional<BigDecimal> totalExpenses = amountAndType.stream()
-                .filter(item -> item.getTransaction().equals(Transactions.OUT)).map(AmountAndTypeOnly::getAmount)
-                .reduce(BigDecimal::add);
-
-        Optional<BigDecimal> totalIn = amountAndType.stream()
-                .filter(item -> item.getTransaction().equals(Transactions.IN)).map(AmountAndTypeOnly::getAmount)
-                .reduce(BigDecimal::add);
-
-        return Response.ok(new PageRecord(output, totalRecords, totalExpenses.orElse(BigDecimal.ZERO),
-                totalIn.orElse(BigDecimal.ZERO))).build();
+        return Response
+                .ok(new PageRecord(output, summary.totalRecords(), summary.totalExpenses(), summary.totalIncome()))
+                .build();
     }
 }
