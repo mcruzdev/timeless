@@ -3,6 +3,10 @@ package dev.matheuscruz.infra.queue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import dev.matheuscruz.domain.InboundMessage;
+import dev.matheuscruz.domain.InboundMessageRepository;
+import dev.matheuscruz.domain.Outbox;
+import dev.matheuscruz.domain.OutboxRepository;
 import dev.matheuscruz.domain.Record;
 import dev.matheuscruz.domain.RecordRepository;
 import dev.matheuscruz.domain.User;
@@ -33,6 +37,8 @@ public class SQS {
     final TextAiService aiService;
     final RecordRepository recordRepository;
     final UserRepository userRepository;
+    final OutboxRepository outboxRepository;
+    final InboundMessageRepository inboundMessageRepository;
     final Logger logger = Logger.getLogger(SQS.class);
 
     private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
@@ -42,7 +48,8 @@ public class SQS {
     public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-message.queue-url") String incomingMessagesUrl,
             @ConfigProperty(name = "whatsapp.recognized-message.queue-url") String messagesProcessedUrl,
             ObjectMapper objectMapper, TextAiService aiService, RecordRepository recordRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, OutboxRepository outboxRepository,
+            InboundMessageRepository inboundMessageRepository) {
 
         this.sqs = sqs;
         this.incomingMessagesUrl = incomingMessagesUrl;
@@ -51,6 +58,8 @@ public class SQS {
         this.aiService = aiService;
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
+        this.outboxRepository = outboxRepository;
+        this.inboundMessageRepository = inboundMessageRepository;
     }
 
     @Scheduled(every = "5s")
@@ -68,6 +77,12 @@ public class SQS {
 
         if (user.isEmpty()) {
             logger.error("User not found. Deleting message from queue.");
+            deleteMessageUsing(receiptHandle);
+            return;
+        }
+
+        if (inboundMessageRepository.findById(incomingMessage.messageId()) != null) {
+            logger.warnf("Message %s already processed. Deleting from queue.", incomingMessage.messageId());
             deleteMessageUsing(receiptHandle);
             return;
         }
@@ -100,15 +115,24 @@ public class SQS {
     private void processAddTransactionMessage(User user, IncomingMessage message, String receiptHandle,
             RecognizedOperation recognizedOperation) throws IOException {
         RecognizedTransaction recognizedTransaction = recognizedOperation.recognizedTransaction();
-        sendProcessedMessage(new TransactionMessageProcessed(AiOperations.ADD_TRANSACTION.commandName(),
-                message.messageId(), MessageStatus.PROCESSED, user.getPhoneNumber(), recognizedTransaction.withError(),
-                recognizedTransaction));
 
         Record record = new Record.Builder().userId(user.getId()).amount(recognizedTransaction.amount())
                 .description(recognizedTransaction.description()).transaction(recognizedTransaction.type())
                 .category(recognizedTransaction.category()).build();
 
-        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(record));
+        TransactionMessageProcessed processedMessage = new TransactionMessageProcessed(
+                AiOperations.ADD_TRANSACTION.commandName(), message.messageId(), MessageStatus.PROCESSED,
+                user.getPhoneNumber(), recognizedTransaction.withError(), recognizedTransaction);
+
+        QuarkusTransaction.requiringNew().run(() -> {
+            inboundMessageRepository.persist(new InboundMessage(message.messageId()));
+            recordRepository.persist(record);
+            try {
+                saveToOutbox(processedMessage);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         deleteMessageUsing(receiptHandle);
 
@@ -119,16 +143,27 @@ public class SQS {
             RecognizedOperation recognizedOperation) throws IOException {
         logger.infof("Processing simple message for user %s", recognizedOperation.recognizedTransaction());
         SimpleMessage response = new SimpleMessage(recognizedOperation.recognizedTransaction().description());
-        sendProcessedMessage(new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(), message.messageId(),
-                MessageStatus.PROCESSED, user.getPhoneNumber(), response));
+
+        SimpleMessageProcessed processedMessage = new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(),
+                message.messageId(), MessageStatus.PROCESSED, user.getPhoneNumber(), response);
+
+        QuarkusTransaction.requiringNew().run(() -> {
+            inboundMessageRepository.persist(new InboundMessage(message.messageId()));
+            try {
+                saveToOutbox(processedMessage);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         deleteMessageUsing(receiptHandle);
         logger.infof("Message %s processed as GET_BALANCE", message.messageId());
     }
 
-    private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
-        String messageBody = objectMapper.writeValueAsString(processedMessage);
-        sqs.sendMessage(req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
-                .messageDeduplicationId(UUID.randomUUID().toString()).queueUrl(processedMessagesUrl));
+    private void saveToOutbox(Object processedMessage) throws JsonProcessingException {
+        String payload = objectMapper.writeValueAsString(processedMessage);
+        Outbox outbox = new Outbox(payload);
+        outboxRepository.persist(outbox);
     }
 
     private IncomingMessage parseIncomingMessage(String messageBody) {
