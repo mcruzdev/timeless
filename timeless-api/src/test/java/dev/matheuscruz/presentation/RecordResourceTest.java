@@ -42,12 +42,13 @@ class RecordResourceTest {
     void shouldUpdateRecord() {
         // Given
         Record record = new Record.Builder().userId("testUser").amount(new BigDecimal("100.00"))
-                .description("Original Description").transaction(Transactions.OUT).category(Categories.FOOD).build();
+                .description("Original Description").transaction(Transactions.OUT).category(Categories.FIXED_COSTS)
+                .build();
 
         saveRecord(record);
 
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.SALARY);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM);
 
         // When
         given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
@@ -59,7 +60,7 @@ class RecordResourceTest {
         assert updatedRecord.getAmount().compareTo(new BigDecimal("150.00")) == 0;
         assert updatedRecord.getDescription().equals("Updated Description");
         assert updatedRecord.getTransaction() == Transactions.IN;
-        assert updatedRecord.getCategory() == Categories.SALARY;
+        assert updatedRecord.getCategory() == Categories.FINANCIAL_FREEDOM;
     }
 
     @Test
@@ -68,12 +69,13 @@ class RecordResourceTest {
     void shouldNotUpdateRecordOfAnotherUser() {
         // Given
         Record record = new Record.Builder().userId("testUser").amount(new BigDecimal("100.00"))
-                .description("Original Description").transaction(Transactions.OUT).category(Categories.FOOD).build();
+                .description("Original Description").transaction(Transactions.OUT).category(Categories.FIXED_COSTS)
+                .build();
 
         saveRecord(record);
 
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.SALARY);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM);
 
         // When
         given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
@@ -85,7 +87,7 @@ class RecordResourceTest {
     @OidcSecurity(claims = { @Claim(key = "upn", value = "testUser") })
     void shouldReturnNotFoundWhenRecordDoesNotExist() {
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.SALARY);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM);
 
         given().contentType("application/json").body(request).when().put("/api/records/999").then().statusCode(404);
     }
