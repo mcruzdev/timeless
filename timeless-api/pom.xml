@@ -17,7 +17,7 @@
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <quarkus-quinoa.version>2.7.1</quarkus-quinoa.version>
         <jbcrypt.version>0.4</jbcrypt.version>
-        <quarkus-langchain4j-openai.version>1.4.2</quarkus-langchain4j-openai.version>
+        <quarkus-langchain4j-openai.version>1.5.0</quarkus-langchain4j-openai.version>
         <assertj.version>3.27.6</assertj.version>
     </properties>
 
