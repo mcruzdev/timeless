@@ -1,3 +1,5 @@
+<p-toast position="top-right" />
+
 <div class="flex flex-row gap-2 items-center my-2">
   <h2 class="font-semibold text-2xl">Overview</h2>
   <div class="flex flex-row gap-2 w-full items-center">
@@ -12,7 +14,9 @@
 
 <div class="flex flex-col md:flex-row gap-2">
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Saldo</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Saldo</p>
+    </ng-template>
 
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
@@ -23,7 +27,9 @@
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Entradas</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Entradas</p>
+    </ng-template>
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
         {{ totalIn() | currency: "BRL" }}
@@ -33,7 +39,9 @@
     }
   </p-card>
   <p-card styleClass="p-2 min-w-[200px] h-[100px]">
-    <ng-template #header><p class="font-extralight">Saídas</p></ng-template>
+    <ng-template #header>
+      <p class="font-extralight">Saídas</p>
+    </ng-template>
     @if (eyes()) {
       <p class="flex-1 text-base font-semibold text-left">
         {{ totalExpenses() | currency: "BRL" }}
@@ -72,14 +80,24 @@
           [severity]="record.transaction == 'IN' ? 'success' : 'danger'"
         ></p-tag>
       </td>
-      <td class="text-sm">{{ record.createdAt }}</td>
+      <td class="text-sm">{{ record.date }}</td>
       <td class="text-sm">
-        <p-button
-          icon="pi pi-trash"
-          [rounded]="true"
-          [text]="true"
-          (click)="deleteRecord(record.id)"
-        />
+        <div class="flex flex-row gap-1">
+          <p-button
+            icon="pi pi-pencil"
+            [rounded]="true"
+            [text]="true"
+            severity="warn"
+            (click)="showEditDialog(record)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [rounded]="true"
+            [text]="true"
+            severity="danger"
+            (click)="deleteRecord(record.id)"
+          />
+        </div>
       </td>
     </tr>
   </ng-template>
@@ -91,3 +109,87 @@
   [totalRecords]="totalRecords()"
   [rowsPerPageOptions]="[10, 20, 30]"
 />
+
+<p-dialog
+  header="Editar Registro"
+  [(visible)]="editDialogVisible"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  draggable="false"
+  resizable="false"
+>
+  <form [formGroup]="editForm" class="flex flex-col gap-4 py-4">
+    <div class="flex flex-col gap-2">
+      <label for="amount" class="text-sm font-medium">Valor</label>
+      <p-inputNumber
+        id="amount"
+        formControlName="amount"
+        mode="currency"
+        currency="BRL"
+        locale="pt-BR"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="description" class="text-sm font-medium">Descrição</label>
+      <input
+        pInputText
+        id="description"
+        formControlName="description"
+        class="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="transaction" class="text-sm font-medium">Tipo</label>
+      <p-select
+        id="transaction"
+        formControlName="transaction"
+        [options]="transactions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione o tipo"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="category" class="text-sm font-medium">Categoria</label>
+      <p-select
+        id="category"
+        formControlName="category"
+        [options]="categories"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione a categoria"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="date" class="text-sm font-medium">Data</label>
+      <p-datepicker
+        id="date"
+        formControlName="date"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        styleClass="w-full"
+      />
+    </div>
+
+    <div class="flex flex-row justify-end gap-2 mt-4">
+      <p-button
+        label="Cancelar"
+        [text]="true"
+        severity="secondary"
+        (click)="editDialogVisible.set(false)"
+      />
+      <p-button
+        label="Salvar"
+        (click)="saveEdit()"
+        [disabled]="editForm.invalid"
+      />
+    </div>
+  </form>
+</p-dialog>

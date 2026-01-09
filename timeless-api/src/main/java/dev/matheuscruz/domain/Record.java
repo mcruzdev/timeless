@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -28,12 +29,13 @@ public class Record {
     @Enumerated(EnumType.STRING)
     private Categories category;
     private Instant createdAt;
+    private LocalDate transactionDate;
 
     protected Record() {
     }
 
-    private Record(String userId, BigDecimal amount, String description, Transactions transaction,
-            Categories category) {
+    private Record(String userId, BigDecimal amount, String description, Transactions transaction, Categories category,
+            LocalDate transactionDate) {
         this.userId = userId;
         this.amount = amount;
         this.description = description;
@@ -41,6 +43,7 @@ public class Record {
         this.category = category;
         this.createdAt = Instant.now();
         this.category = Optional.ofNullable(category).orElse(Categories.NONE);
+        this.transactionDate = Optional.ofNullable(transactionDate).orElse(java.time.LocalDate.now());
     }
 
     public Long getId() {
@@ -71,11 +74,16 @@ public class Record {
         return createdAt;
     }
 
+    public LocalDate getTransactionDate() {
+        return transactionDate;
+    }
+
     public void update(UpdateRecordRequest request) {
         this.amount = Objects.requireNonNull(request.amount());
         this.description = Objects.requireNonNull(request.description());
         this.transaction = Objects.requireNonNull(request.transaction());
         this.category = Objects.requireNonNull(request.category());
+        this.transactionDate = Objects.requireNonNull(request.transactionDate());
     }
 
     public static class Builder {
@@ -84,6 +92,7 @@ public class Record {
         private String description;
         private Transactions transaction;
         private Categories category;
+        private LocalDate transactionDate;
 
         public Builder userId(String userId) {
             this.userId = userId;
@@ -110,18 +119,24 @@ public class Record {
             return this;
         }
 
+        public Builder transactionDate(LocalDate transactionDate) {
+            this.transactionDate = transactionDate;
+            return this;
+        }
+
         public Record build() {
             Objects.requireNonNull(userId, "userId must not be null");
             Objects.requireNonNull(amount, "amount must not be null");
             Objects.requireNonNull(description, "description must not be null");
             Objects.requireNonNull(transaction, "transaction must not be null");
+            Objects.requireNonNull(transactionDate, "transactionDate must not be null");
 
             if (transaction == Transactions.IN) {
                 category = Categories.NONE;
             }
             category = Optional.ofNullable(category).orElse(Categories.GENERAL);
 
-            return new Record(userId, amount, description, transaction, category);
+            return new Record(userId, amount, description, transaction, category, transactionDate);
         }
 
     }

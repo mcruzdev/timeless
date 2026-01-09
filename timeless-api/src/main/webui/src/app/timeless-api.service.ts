@@ -58,6 +58,10 @@ export class TimelessApiService {
     return this.httpClient.delete(`/api/records/${id}`);
   }
 
+  updateRecord(id: number, record: UpdateRecord) {
+    return this.httpClient.put(`/api/records/${id}`, record);
+  }
+
   logout() {
     localStorage.removeItem(timelessLocalStorageKey);
   }
@@ -75,10 +79,15 @@ export interface RecordPageResponse {
 }
 
 export interface RecordResponseItem {
+  id: number;
   amount: number;
   description: string;
-  transaction: string;
+  transaction: 'IN' | 'OUT';
+  date: string;
   createdAt: string;
+  category: string;
+  tag?: string;
+  icon?: string;
 }
 
 export interface UpdateUser {
@@ -87,4 +96,14 @@ export interface UpdateUser {
   lastName: string;
   email: string;
   phoneNumber: string;
+}
+
+export interface UpdateRecord {
+  id: number;
+  amount: number;
+  description: string;
+  transaction: 'IN' | 'OUT';
+  date: string;
+  category: string;
+  tag?: string;
 }

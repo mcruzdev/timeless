@@ -17,6 +17,7 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ class RecordResourceTest {
         saveRecord(record);
 
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.FINANCIAL_FREEDOM);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM, LocalDate.now());
 
         // When
         given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
@@ -75,7 +76,7 @@ class RecordResourceTest {
         saveRecord(record);
 
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.FINANCIAL_FREEDOM);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM, java.time.LocalDate.now());
 
         // When
         given().contentType("application/json").body(request).when().put("/api/records/" + record.getId()).then()
@@ -87,7 +88,7 @@ class RecordResourceTest {
     @OidcSecurity(claims = { @Claim(key = "upn", value = "testUser") })
     void shouldReturnNotFoundWhenRecordDoesNotExist() {
         UpdateRecordRequest request = new UpdateRecordRequest(new BigDecimal("150.00"), "Updated Description",
-                Transactions.IN, Categories.FINANCIAL_FREEDOM);
+                Transactions.IN, Categories.FINANCIAL_FREEDOM, java.time.LocalDate.now());
 
         given().contentType("application/json").body(request).when().put("/api/records/999").then().statusCode(404);
     }
