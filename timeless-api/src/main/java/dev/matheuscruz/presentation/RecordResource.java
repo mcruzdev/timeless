@@ -63,17 +63,20 @@ public class RecordResource {
     @PUT
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, @Valid UpdateRecordRequest req) {
-        Record record = this.recordRepository.findById(id);
 
-        if (record == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+        QuarkusTransaction.requiringNew().run(() -> {
+            Record record = this.recordRepository.findById(id);
 
-        if (!record.getUserId().equals(upn)) {
-            return Response.status(Response.Status.FORBIDDEN).build();
-        }
+            if (record == null) {
+                throw new jakarta.ws.rs.NotFoundException();
+            }
 
-        QuarkusTransaction.requiringNew().run(() -> record.update(req));
+            if (!record.getUserId().equals(upn)) {
+                throw new jakarta.ws.rs.ForbiddenException();
+            }
+
+            record.update(req);
+        });
 
         return Response.noContent().build();
     }
@@ -105,10 +108,11 @@ public class RecordResource {
         // pagination
         List<RecordItemResponse> output = recordRepository.find("userId = :userId", Parameters.with("userId", upn))
                 .page(Page.of(page, limit)).list().stream().map(record -> {
-                    String format = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
+                    String createdAt = record.getCreatedAt().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDate()
                             .format(formatter);
+                    String transactionDate = record.getTransactionDate().format(formatter);
                     return new RecordItemResponse(record.getId(), record.getAmount(), record.getDescription(),
-                            record.getTransaction().name(), format, record.getCategory().name());
+                            record.getTransaction().name(), transactionDate, createdAt, record.getCategory().name());
                 }).toList();
 
         // calculate total expenses and total in
