@@ -1,7 +1,7 @@
 import { Component, inject, signal, HostListener } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, CommonModule } from '@angular/common';
 import {
   RecordResponseItem,
   TimelessApiService,
@@ -21,7 +21,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
