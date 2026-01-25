@@ -5,7 +5,6 @@ const allowedPaths = [
   '/api/sign-in',
   '/api/sign-up',
   'api/sign-in',
-  ,
   'api/sign-up',
 ];
 
