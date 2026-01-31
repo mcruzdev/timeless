@@ -6,6 +6,7 @@ import { SignInComponent } from './pages/sign/sign-in/sign-in.component';
 import { RegisteredComponent } from './pages/sign/registered/registered.component';
 import { UserConfigComponent } from './pages/user-config/user-config.component';
 import { RecordsComponent } from './components/records/records.component';
+import { AuthGuard } from './guards/auth_guard.guard';
 
 export const routes: Routes = [
   {
@@ -29,6 +30,8 @@ export const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
     children: [
       {
         path: '',
