@@ -1,5 +1,7 @@
 # If you've reached this document, it means you're interested in participating in the project.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mcruzdev/timeless)
+
 # Thank you for your interest in contributing to **TimeLess**! 🎉
 
 This document is a set of guidelines to help you contribute to this project. Feel free to suggest changes to this document in a Pull Request.

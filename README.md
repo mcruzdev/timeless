@@ -16,6 +16,17 @@ Timeless is primarily an educational project built to explore the intersection o
 * **Continuous Improvement**: The codebase is designed to evolve. We encourage experiments with local LLMs and different cloud providers.
 * **Learning by Doing**: This is a sandbox for implementing "real-world" logic in a controlled environment. Feel free to refactor, break, and improve!
 
+## 🤝 How to Contribute
+
+We love community contributions! Whether you're fixing a bug or adding a feature, getting involved in Open Source is a fantastic way to learn and grow.
+
+* The Basics: Check out our [CONTRIBUTING.md](CONTRIBUTING.md) guide to get started.
+
+* AI-Powered Insights: For a high-level overview of the codebase, you can explore the project via DeepWiki: 
+
+   [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mcruzdev/timeless)
+
+
 ## 🚀 Features
 
 - 📩 Automatic reading of WhatsApp messages
@@ -103,7 +114,3 @@ After connected the device with the scanned QR Code, send the following message:
 You should receive something like it:
 
 ![success](docs/images/message-processed-successfully.png)
-
-### How to contribute
-
-[CONTRIBUTING.md](CONTRIBUTING.md)
