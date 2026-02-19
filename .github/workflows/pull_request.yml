@@ -3,6 +3,9 @@ name: Timeless CI - Pull Request Build
 on:
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'timeless-api/**'
+      - 'whatsapp/**'
     paths-ignore:
       - 'infrastructure/**'
 
@@ -14,8 +17,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-changes:
+    uses: ./.github/workflows/detect_changes.yml
+
   timeless-api:
     name: Build Timeless API (Backend)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,6 +64,8 @@ jobs:
 
   whatsapp:
     name: Build WhatsApp Bot (Node.js)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.whatsapp == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:

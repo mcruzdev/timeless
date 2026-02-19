@@ -3,10 +3,16 @@ name: Timeless CI - Build & Publish
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'timeless-api/**'
+      - 'whatsapp/**'
     paths-ignore:
       - 'infrastructure/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'timeless-api/**'
+      - 'whatsapp/**'
     paths-ignore:
       - 'infrastructure/**'
 
@@ -21,8 +27,13 @@ env:
   PUBLISH: ${{ github.repository == 'mcruzdev/timeless' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
 jobs:
+  detect-changes:
+    uses: ./.github/workflows/detect_changes.yml
+
   timeless-api:
     name: Build & Publish - Timeless API (Java)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -84,6 +95,8 @@ jobs:
 
   whatsapp:
     name: Build & Publish - WhatsApp Bot (Node.js)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.whatsapp == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
