@@ -6,7 +6,6 @@ on:
     paths:
       - 'timeless-api/**'
       - 'whatsapp/**'
-    paths-ignore:
       - 'infrastructure/**'
 
 permissions:

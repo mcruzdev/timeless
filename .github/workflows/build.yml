@@ -6,14 +6,12 @@ on:
     paths:
       - 'timeless-api/**'
       - 'whatsapp/**'
-    paths-ignore:
       - 'infrastructure/**'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'timeless-api/**'
       - 'whatsapp/**'
-    paths-ignore:
       - 'infrastructure/**'
 
 permissions:
