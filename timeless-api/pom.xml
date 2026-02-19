@@ -18,7 +18,7 @@
         <quarkus-quinoa.version>2.7.1</quarkus-quinoa.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <quarkus-langchain4j-openai.version>1.7.2</quarkus-langchain4j-openai.version>
-        <assertj.version>3.27.6</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
     </properties>
 
     <dependencyManagement>
