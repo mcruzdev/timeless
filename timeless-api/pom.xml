@@ -67,16 +67,6 @@
             <version>${quarkus-quinoa.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.quarkiverse.langchain4j</groupId>
-            <artifactId>quarkus-langchain4j-openai</artifactId>
-            <version>${quarkus-langchain4j-openai.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.langchain4j</groupId>
-            <artifactId>quarkus-langchain4j-ollama</artifactId>
-            <version>${quarkus-langchain4j-openai.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkiverse.amazonservices</groupId>
             <artifactId>quarkus-amazon-sqs</artifactId>
         </dependency>
@@ -227,6 +217,29 @@
                 <skipITs>false</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
+        </profile>
+        <profile>
+            <id>openai</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkiverse.langchain4j</groupId>
+                    <artifactId>quarkus-langchain4j-openai</artifactId>
+                    <version>${quarkus-langchain4j-openai.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>ollama</id>
+            <dependencies>
+                <dependency>
+                    <groupId>io.quarkiverse.langchain4j</groupId>
+                    <artifactId>quarkus-langchain4j-ollama</artifactId>
+                    <version>${quarkus-langchain4j-openai.version}</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>
