@@ -1,4 +1,4 @@
-name: Publish Landing Page to Amazon S3
+name: Timeless CI - Publish Landing Page to Amazon S3
 on:
   push:
     branches:
