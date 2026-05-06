@@ -1,0 +1,32 @@
+name: Detect Changed Paths
+
+on:
+  workflow_call:
+    outputs:
+      api:
+        description: Whether API paths changed
+        value: ${{ jobs.changes.outputs.api }}
+      whatsapp:
+        description: Whether WhatsApp paths changed
+        value: ${{ jobs.changes.outputs.whatsapp }}
+
+jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      whatsapp: ${{ steps.filter.outputs.whatsapp }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api:
+              - 'timeless-api/**'
+            whatsapp:
+              - 'whatsapp/**'
