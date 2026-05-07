@@ -1,4 +1,4 @@
-name: Detect Changed Paths
+name: Timeless CI - Detect Changed Paths
 
 on:
   workflow_call:
