@@ -69,7 +69,10 @@ If you want to use Terraform and AWS see [this tutorial](RUNNING_TERRAFORM_AWS.m
 docker-compose up -d
 ```
 
-### Execute the timeless-api
+### Execute the timeless-api 
+Run using OpenAI or Ollama.
+
+#### Using OpenAPI
 
 > [!NOTE]
 > Before you start, make sure to fill the `quarkus.langchain4j.openai.api-key` and `quarkus.langchain4j.openai.gpt-4-turbo.api-key` variables in the `timeless/src/main/resources/application.properties` file.
@@ -84,6 +87,20 @@ docker-compose up -d
 2. Sign up at http://localhost:8080/sign-up
 
 3. Sign in at http://localhost:8080
+
+
+#### Using Ollama
+
+1. Go to `timeless-api` directory and execute:
+
+```shell
+./mvnw quarkus:dev -Pollama -Dquarkus.profile=local
+```
+
+2. Sign up at http://localhost:8080/sign-up
+
+3. Sign in at http://localhost:8080
+
 
 ### Execute the whatsapp application
 
