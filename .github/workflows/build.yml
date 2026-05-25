@@ -57,14 +57,6 @@ jobs:
           node-version: "24"
           cache: npm
 
-      - name: Setup Chrome
-        id: chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Install Frontend Dependencies
-        working-directory: ./timeless-api/src/main/webui
-        run: npm ci
-
       - name: Check code formatting with Prettier
         working-directory: ./timeless-api/src/main/webui
         run: npm run prettier:check
