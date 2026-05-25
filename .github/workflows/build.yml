@@ -49,7 +49,7 @@ jobs:
           cache: maven
 
       - name: Build API
-        run: mvn -B -ntp formatter:validate impsort:check package
+        run: mvn -B -ntp formatter:validate impsort:check package -Pollama
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v4
