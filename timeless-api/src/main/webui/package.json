@@ -22,7 +22,7 @@
     "@angular/router": "^21.2.12",
     "@primeuix/themes": "^2.0.2",
     "primeicons": "^7.0.0",
-    "primeng": "^21.1.6",
+    "primeng": "^21.1.9",
     "rxjs": "~7.8.0",
     "tailwindcss-primeui": "^0.6.1",
     "tslib": "^2.3.0",
