@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Directory | Purpose |
 |---|---|
 | `timeless-api/` | Java 21 / Quarkus 3 backend + Angular 19 frontend (served via Quinoa) |
-| `whatsapp/` | Node.js 20 service that bridges WhatsApp messages to the API via SQS |
+| `whatsapp/` | Node.js service that bridges WhatsApp messages to the API via SQS |
 | `docker/` | Local-dev docker-compose (LocalStack SQS/S3, PostgreSQL, Ollama) |
 | `infrastructure/` | Terraform / AWS provisioning |
 | `site/` | Landing page |
@@ -55,18 +55,21 @@ npm run prettier:write   # format check + apply
 cd docker && docker-compose up -d   # starts LocalStack, PostgreSQL, Ollama
 ```
 
+## CI pipeline
+
+CI runs on every push/PR to `main` when `timeless-api/`, `whatsapp/`, or `infrastructure/` change. Key differences from local dev:
+
+- **Java build uses check mode, not auto-format**: `mvn formatter:validate impsort:check package -Pollama` — this means CI will **fail** if formatting is wrong rather than fixing it. Run `./mvnw clean package` locally to auto-format before pushing.
+- **CI uses the `ollama` Maven profile** (`-Pollama`), so tests don't require an OpenAI API key.
+- **Prettier runs in check mode**: `npm run prettier:check` for both frontend and whatsapp. Run `npm run prettier:write` locally to fix formatting.
+
 ## Architecture: message processing flow
 
-There are **two parallel paths** for processing WhatsApp messages:
+The whatsapp service handles three input types with different processing paths:
 
-**Synchronous path** (used when the whatsapp service calls the API directly):
+**Text messages → async SQS path** (production path):
 ```
-WhatsApp user → whatsapp/src/index.js → POST /api/messages → MessageResource → LangChain4j AI → DB
-```
-
-**Async SQS path** (used in production; whatsapp pushes to SQS, API polls):
-```
-WhatsApp user → whatsapp/src/index.js → SQS (incoming FIFO queue)
+WhatsApp text → whatsapp/src/index.js → SQS (incoming FIFO queue)
                                               ↓ (polled every 5s)
                               timeless-api/SQS.java → LangChain4j AI → DB
                                               ↓
@@ -75,16 +78,38 @@ WhatsApp user → whatsapp/src/index.js → SQS (incoming FIFO queue)
                               whatsapp/src/index.js → reply to user
 ```
 
+**Audio messages → sync path via Whisper + API**:
+```
+WhatsApp audio → whatsapp/src/index.js → OpenAI Whisper transcription
+                                              ↓
+                              POST /api/messages → MessageResource → LangChain4j AI → DB
+```
+
+**Image messages → sync path via API**:
+```
+WhatsApp image → whatsapp/src/index.js → POST /api/messages/image → MessageResource → LangChain4j AI → DB
+```
+
 `SQS.java` (`infra/queue/SQS.java`) is the scheduler that drives the async path. It dispatches to two operation types: `ADD_TRANSACTION` and `GET_BALANCE`.
 
 ## AI integration
 
-`TextAiService` and `ImageAiService` are LangChain4j `@RegisterAiService` interfaces. The `TextAiService` prompt (in the annotation) defines the full classification logic — it returns a JSON with `operation` and `content`. The AI must return one of these operations:
+`TextAiService` and `ImageAiService` are LangChain4j `@RegisterAiService` interfaces. The `TextAiService` prompt (in the annotation) defines the full classification logic — it returns a JSON with `operation` and `content`. `ImageAiService` uses the `gpt-4-turbo` model name for vision capabilities. The AI must return one of these operations:
 
 - `ADD_TRANSACTION` — extracts amount, description, type (IN/OUT), category
-- `GET_BALANCE` — uses `GetBalanceTool` to query the DB and respond in Portuguese
+- `GET_BALANCE` — uses `GetBalanceTool` (a LangChain4j `@Tool`) to query the DB and respond in Portuguese
 
 Categories: `GOALS`, `COMFORT`, `FIXED_COSTS`, `PLEASURES`, `FINANCIAL_FREEDOM`, `KNOWLEDGE`
+
+Note: `Record.Builder` enforces that IN transactions get category `NONE`; null category defaults to `GENERAL`.
+
+## Backend package structure
+
+All Java code lives under `dev.matheuscruz` with three layers:
+
+- `domain/` — JPA entities (`User`, `Record`) and Panache repositories. `User` encrypts `email` and `phoneNumber` at rest via `SecretAttributeConverter` (AES).
+- `infra/` — AI services (`ai/`), SQS queue processing (`queue/`), security adapters (`security/`), JPA converters (`persistence/`)
+- `presentation/` — JAX-RS resources and request/response DTOs
 
 ## Configuration profiles
 
@@ -93,6 +118,8 @@ Categories: `GOALS`, `COMFORT`, `FIXED_COSTS`, `PLEASURES`, `FINANCIAL_FREEDOM`,
 | `dev` (default) | `quarkus:dev` | Uses OpenAI, requires `OPENAI_API_KEY` in `application.properties` |
 | `local` | `-Dquarkus.profile=local` | Uses Ollama at `localhost:11434`, uses LocalStack for SQS |
 | `test` | `@QuarkusTest` | Disables SQS devservices, disables OpenAI integration, disables scheduler |
+
+Maven profiles `openai` (active by default) and `ollama` control which LangChain4j dependency is included. Use `-Pollama` to switch.
 
 ## Testing conventions
 
