@@ -27,7 +27,7 @@ updates:
   - package-ecosystem: npm
     directory: /timeless-api/src/main/webui
     schedule:
-      interval: daily
+      interval: weekly
     labels:
       - dependencies
       - frontend
