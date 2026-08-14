@@ -56,6 +56,7 @@ jobs:
         with:
           node-version: "24"
           cache: npm
+          cache-dependency-path: timeless-api/src/main/webui/package-lock.json
 
       - name: Check code formatting with Prettier
         working-directory: ./timeless-api/src/main/webui
