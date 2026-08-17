@@ -17,7 +17,7 @@
         "@aws-sdk/client-sqs": "^3.817.0",
         "axios": "^1.9.0",
         "dotenv": "^17.2.3",
-        "openai": "^6.9.1",
+        "openai": "^7.4.0",
         "qrcode": "^1.5.4",
         "qrcode-terminal": "^0.12.0",
         "sqs-consumer": "^15.0.1",
