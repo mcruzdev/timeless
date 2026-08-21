@@ -13,122 +13,126 @@ import dev.matheuscruz.infra.ai.data.AllRecognizedOperations;
 import dev.matheuscruz.infra.ai.data.RecognizedOperation;
 import dev.matheuscruz.infra.ai.data.RecognizedTransaction;
 import dev.matheuscruz.infra.ai.data.SimpleMessage;
+import dev.matheuscruz.infra.outbox.OutboxMessage;
+import dev.matheuscruz.infra.outbox.OutboxMessageRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.io.IOException;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
-import software.amazon.awssdk.services.sqs.SqsClient;
 
 @ApplicationScoped
 public class SQS {
 
-    final String incomingMessagesUrl;
-    final String processedMessagesUrl;
-    final SqsClient sqs;
     final ObjectMapper objectMapper;
     final TextAiService aiService;
     final RecordRepository recordRepository;
     final UserRepository userRepository;
+    final OutboxMessageRepository outboxMessageRepository;
+    final String recognizedQueueUrl;
     final Logger logger = Logger.getLogger(SQS.class);
 
     private static final ObjectReader INCOMING_MESSAGE_READER = new ObjectMapper().readerFor(IncomingMessage.class);
 
-    private static final ObjectReader AI_RESPONSE_READER = new ObjectMapper().readerFor(RecognizedOperation.class);
+    public SQS(ObjectMapper objectMapper, TextAiService aiService, RecordRepository recordRepository,
+            UserRepository userRepository, OutboxMessageRepository outboxMessageRepository,
+            @ConfigProperty(name = "whatsapp.recognized-message.queue-url") String recognizedQueueUrl) {
 
-    public SQS(SqsClient sqs, @ConfigProperty(name = "whatsapp.incoming-message.queue-url") String incomingMessagesUrl,
-            @ConfigProperty(name = "whatsapp.recognized-message.queue-url") String messagesProcessedUrl,
-            ObjectMapper objectMapper, TextAiService aiService, RecordRepository recordRepository,
-            UserRepository userRepository) {
-
-        this.sqs = sqs;
-        this.incomingMessagesUrl = incomingMessagesUrl;
-        this.processedMessagesUrl = messagesProcessedUrl;
         this.objectMapper = objectMapper;
         this.aiService = aiService;
         this.recordRepository = recordRepository;
         this.userRepository = userRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
+        this.recognizedQueueUrl = recognizedQueueUrl;
     }
 
-    @Scheduled(every = "5s")
-    public void receiveMessages() {
-        sqs.receiveMessage(req -> req.maxNumberOfMessages(10).queueUrl(incomingMessagesUrl)).messages()
-                .forEach(message -> processMessage(message.body(), message.receiptHandle()));
-    }
-
-    private void processMessage(String body, String receiptHandle) {
+    @Incoming("whatsapp-incoming")
+    public CompletionStage<Void> receiveMessages(Message<String> message) {
+        String body = message.getPayload();
         IncomingMessage incomingMessage = parseIncomingMessage(body);
-        if (!MessageKind.TEXT.equals(incomingMessage.kind()))
-            return;
+
+        if (!MessageKind.TEXT.equals(incomingMessage.kind())) {
+            return message.ack();
+        }
 
         Optional<User> user = this.userRepository.findByPhoneNumber(incomingMessage.sender());
 
         if (user.isEmpty()) {
-            logger.error("User not found. Deleting message from queue.");
-            deleteMessageUsing(receiptHandle);
-            return;
+            logger.error("User not found.");
+            return message.nack(new RuntimeException("User not found for phone: " + incomingMessage.sender()));
         }
 
-        handleUserMessage(user.get(), incomingMessage, receiptHandle);
-    }
-
-    private void handleUserMessage(User user, IncomingMessage message, String receiptHandle) {
         try {
-            AllRecognizedOperations allRecognizedOperations = aiService.handleMessage(message.messageBody(),
-                    user.getId());
-
-            for (RecognizedOperation recognizedOperation : allRecognizedOperations.all()) {
-                switch (recognizedOperation.operation()) {
-                    case AiOperations.ADD_TRANSACTION ->
-                            processAddTransactionMessage(user, message, receiptHandle, recognizedOperation);
-                    case AiOperations.GET_BALANCE -> {
-                        logger.info("Processing GET_BALANCE operation" + recognizedOperation.recognizedTransaction());
-                        processSimpleMessage(user, message, receiptHandle, recognizedOperation);
-                    }
-                    default -> logger.warnf("Unknown operation type: %s", recognizedOperation.operation());
-                }
-            }
-
+            handleUserMessage(user.get(), incomingMessage);
+            return message.ack();
         } catch (Exception e) {
-            logger.error("Failed to process message: " + message.messageId(), e);
+            logger.error("Failed to process message: " + incomingMessage.messageId(), e);
+            return message.nack(e);
         }
     }
 
-    private void processAddTransactionMessage(User user, IncomingMessage message, String receiptHandle,
-            RecognizedOperation recognizedOperation) throws IOException {
+    private void handleUserMessage(User user, IncomingMessage message) {
+        AllRecognizedOperations allRecognizedOperations = aiService.handleMessage(message.messageBody(), user.getId());
+
+        for (RecognizedOperation recognizedOperation : allRecognizedOperations.all()) {
+            switch (recognizedOperation.operation()) {
+                case AiOperations.ADD_TRANSACTION -> processAddTransactionMessage(user, message, recognizedOperation);
+                case AiOperations.GET_BALANCE -> {
+                    logger.info("Processing GET_BALANCE operation" + recognizedOperation.recognizedTransaction());
+                    processSimpleMessage(user, message, recognizedOperation);
+                }
+                default -> logger.warnf("Unknown operation type: %s", recognizedOperation.operation());
+            }
+        }
+    }
+
+    private void processAddTransactionMessage(User user, IncomingMessage message,
+            RecognizedOperation recognizedOperation) {
         RecognizedTransaction recognizedTransaction = recognizedOperation.recognizedTransaction();
-        sendProcessedMessage(new TransactionMessageProcessed(AiOperations.ADD_TRANSACTION.commandName(),
-                message.messageId(), MessageStatus.PROCESSED, user.getPhoneNumber(), recognizedTransaction.withError(),
-                recognizedTransaction));
 
         Record record = new Record.Builder().userId(user.getId()).amount(recognizedTransaction.amount())
                 .description(recognizedTransaction.description()).transaction(recognizedTransaction.type())
                 .category(recognizedTransaction.category()).build();
 
-        QuarkusTransaction.requiringNew().run(() -> recordRepository.persist(record));
+        TransactionMessageProcessed processed = new TransactionMessageProcessed(
+                AiOperations.ADD_TRANSACTION.commandName(), message.messageId(), MessageStatus.PROCESSED,
+                user.getPhoneNumber(), recognizedTransaction.withError(), recognizedTransaction);
 
-        deleteMessageUsing(receiptHandle);
+        OutboxMessage outboxMessage = new OutboxMessage(serialize(processed), recognizedQueueUrl,
+                user.getPhoneNumber());
+
+        QuarkusTransaction.requiringNew().run(() -> {
+            recordRepository.persist(record);
+            outboxMessageRepository.persist(outboxMessage);
+        });
 
         logger.infof("Message %s processed as ADD_TRANSACTION", message.messageId());
     }
 
-    private void processSimpleMessage(User user, IncomingMessage message, String receiptHandle,
-            RecognizedOperation recognizedOperation) throws IOException {
+    private void processSimpleMessage(User user, IncomingMessage message, RecognizedOperation recognizedOperation) {
         logger.infof("Processing simple message for user %s", recognizedOperation.recognizedTransaction());
         SimpleMessage response = new SimpleMessage(recognizedOperation.recognizedTransaction().description());
-        sendProcessedMessage(new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(), message.messageId(),
-                MessageStatus.PROCESSED, user.getPhoneNumber(), response));
-        deleteMessageUsing(receiptHandle);
+
+        SimpleMessageProcessed processed = new SimpleMessageProcessed(AiOperations.GET_BALANCE.commandName(),
+                message.messageId(), MessageStatus.PROCESSED, user.getPhoneNumber(), response);
+
+        OutboxMessage outboxMessage = new OutboxMessage(serialize(processed), recognizedQueueUrl,
+                user.getPhoneNumber());
+
+        QuarkusTransaction.requiringNew().run(() -> outboxMessageRepository.persist(outboxMessage));
+
         logger.infof("Message %s processed as GET_BALANCE", message.messageId());
     }
 
-    private void sendProcessedMessage(Object processedMessage) throws JsonProcessingException {
-        String messageBody = objectMapper.writeValueAsString(processedMessage);
-        sqs.sendMessage(req -> req.messageBody(messageBody).messageGroupId("ProcessedMessages")
-                .messageDeduplicationId(UUID.randomUUID().toString()).queueUrl(processedMessagesUrl));
+    private String serialize(Object message) {
+        try {
+            return objectMapper.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize message", e);
+        }
     }
 
     private IncomingMessage parseIncomingMessage(String messageBody) {
@@ -137,10 +141,6 @@ public class SQS {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse incoming message", e);
         }
-    }
-
-    private void deleteMessageUsing(String receiptHandle) {
-        sqs.deleteMessage(req -> req.queueUrl(incomingMessagesUrl).receiptHandle(receiptHandle));
     }
 
     public record TransactionMessageProcessed(String kind, String messageId, MessageStatus status, String user,
