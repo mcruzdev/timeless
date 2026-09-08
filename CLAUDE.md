@@ -52,7 +52,10 @@ npm run prettier:write   # format check + apply
 ### Local infrastructure
 
 ```bash
-cd docker && docker-compose up -d   # starts LocalStack, PostgreSQL, Ollama
+cd docker && docker-compose up -d   # starts LocalStack + PostgreSQL (Ollama excluded by default)
+
+# Include the local Ollama container (opt-in via the "ollama" compose profile)
+cd docker && docker-compose --profile ollama up -d
 ```
 
 ## CI pipeline
@@ -141,5 +144,5 @@ Maven profiles `openai` (active by default) and `ollama` control which LangChain
 | `OPENAI_API_KEY` | timeless-api, whatsapp | Required for OpenAI mode |
 | `ALLOWED_PHONE_NUMBERS` | whatsapp `.env.local` | Comma-separated list of allowed numbers |
 | `SECURITY_KEY` | timeless-api | AES secret (base64); `%dev` defaults to `YS0xNi1ieXRlLXNlY3JldA==` |
-| `JWT_PUBLIC_KEY` / `JWT_PRIVATE_KEY` | timeless-api | SmallRye JWT signing keys |
+| `JWT_PUBLIC_KEY` / `JWT_PRIVATE_KEY` | timeless-api | SmallRye JWT keys — required only for the `prod`/`aws` profiles. `dev`/`local` use the bundled `publicKey.pem` / `privateKey.pem` under `src/main/resources` (dev-only throwaway keys). |
 | `INCOMING_MESSAGE_FIFO_URL` / `RECOGNIZED_MESSAGE_FIFO_URL` | both services | SQS FIFO queue URLs |

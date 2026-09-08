@@ -69,6 +69,14 @@ If you want to use Terraform and AWS see [this tutorial](RUNNING_TERRAFORM_AWS.m
 docker-compose up -d
 ```
 
+This starts LocalStack and PostgreSQL only. The Ollama container is now opt-in
+via the `ollama` Compose profile — include it only if you plan to run the API
+against a local LLM without Quarkus Dev Services:
+
+```shell
+docker-compose --profile ollama up -d
+```
+
 ### Execute the timeless-api 
 Run using OpenAI or Ollama.
 
@@ -90,6 +98,10 @@ Run using OpenAI or Ollama.
 
 
 #### Using Ollama
+
+> [!NOTE]
+> Start the Ollama container first with `docker-compose --profile ollama up -d`
+> (the default `docker-compose up -d` no longer starts it).
 
 1. Go to `timeless-api` directory and execute:
 
